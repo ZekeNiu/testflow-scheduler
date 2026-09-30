@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#176b50">
+  <meta name="description" content="通过可收起的侧栏调整测试方案，查看站点运行、排队情况与分批到场安排。">
+  <title>测试排程与耗时计算器 · TestFlow</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%23176b50'/%3E%3Cpath d='M10 12h20M10 20h20M10 28h20' stroke='white' stroke-width='2'/%3E%3Ccircle cx='17' cy='12' r='3' fill='%23176b50' stroke='white' stroke-width='2'/%3E%3Ccircle cx='24' cy='20' r='3' fill='%23176b50' stroke='white' stroke-width='2'/%3E%3Ccircle cx='14' cy='28' r='3' fill='%23176b50' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+  <style>
+:root{--ink:#193a30;--muted:#647b70;--green:#176b50;--dark:#104d39;--line:#dce6df;--soft:#f3f7f4;--canvas:#f7f8f7;--shadow:0 3px 16px #19382e0b,0 1px 3px #19382e05;--shadow-soft:0 2px 9px #19382e08;--red:#a13f37;--amber:#916323;--bar-height:76px;--tabs-height:45px;font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;font-size:15px;color-scheme:light}
+*{box-sizing:border-box}html{scroll-padding-top:calc(var(--bar-height) + 20px)}body{margin:0;background:var(--canvas);color:var(--ink);line-height:1.55}h1,h2,h3,p{margin:0}button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{cursor:not-allowed;opacity:.35}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #4b9d7c;outline-offset:3px}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.skip-link{position:fixed;z-index:100;left:12px;top:-60px;padding:10px;background:#fff;color:var(--green)}.skip-link:focus{top:10px}
+input,select{width:100%;min-width:0;min-height:36px;border:1px solid #ccddd2;border-radius:6px;background:#fff;color:var(--ink);padding:7px 9px;line-height:1.3;font-size:14px}input:hover,select:hover{border-color:#9fb8a9}input:focus,select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px #176b5015}input:disabled,select:disabled{background:#f2f5f2;color:#8c9e92}input[type=number]{appearance:textfield;-moz-appearance:textfield;font-variant-numeric:tabular-nums}input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=checkbox]{width:16px;height:16px;min-height:16px;margin:0;accent-color:var(--green);flex-shrink:0}input[aria-invalid=true],select[aria-invalid=true]{border-color:var(--red);background:#fff5f2}
+.app{width:100%;max-width:2200px;margin:0 auto}.app-bar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:22px;padding:13px 24px;background:#fff;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:11px;flex-shrink:0}.brand-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--green);color:#fff;font-weight:600;letter-spacing:-1px}.brand h1{font-size:18px;font-weight:650}.brand p{font-size:11px;color:var(--muted);margin-top:2px}.toolbar{display:flex;gap:7px;align-items:center;margin-left:auto}.save-state{font-size:11px;color:var(--muted);white-space:nowrap;margin-right:5px}.button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:7px 12px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font-size:13px;white-space:nowrap}.button:hover{background:var(--soft);border-color:#a9c4b4}.button.primary{background:var(--green);color:#fff;border-color:var(--green)}.button.primary:hover{background:var(--dark)}.button.small{min-height:31px;padding:5px 9px;font-size:12px}.text-button{padding:2px 0;border:0;background:transparent;color:var(--green);font-size:13px;text-align:left}.text-button:hover{text-decoration:underline}.help-button,.hint-button{display:inline-grid;place-items:center;padding:0;background:#fff;color:var(--muted);border:1px solid #b5ccbe;border-radius:50%;flex-shrink:0}.help-button{width:28px;height:28px;margin-left:2px}.hint-button{width:19px;height:19px;font-size:11px;vertical-align:middle;margin-left:3px;line-height:1}.hint-button:hover,.hint-button:focus-visible{color:var(--green);background:#eaf5ed;border-color:var(--green)}.close-button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:5px;background:transparent;color:var(--muted);font-size:24px;flex-shrink:0}.close-button:hover{background:var(--soft)}
+.workspace-layout{display:grid;grid-template-columns:clamp(300px,24vw,330px) minmax(0,1fr);align-items:start;gap:20px;padding:20px 24px 40px}.workspace-layout.settings-hidden{grid-template-columns:minmax(0,1fr)}.settings-sidebar{position:sticky;top:calc(var(--bar-height) + 20px);max-height:calc(100dvh - var(--bar-height) - 40px);display:flex;flex-direction:column;min-width:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}.sidebar-heading{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;border-bottom:1px solid var(--line);flex-shrink:0}.sidebar-heading h2{font-size:16px}.sidebar-heading p{font-size:12px;color:var(--muted);margin-top:3px}.sidebar-content{overflow:auto;padding:0 16px 17px;overscroll-behavior:contain;scrollbar-gutter:stable}.sidebar-section{border-bottom:1px solid var(--line);padding:12px 0}.sidebar-section>summary{cursor:pointer;font-size:14px;font-weight:600}.section-summary{font-size:11px;font-weight:400;color:var(--muted);margin-left:8px}.section-content{padding-top:12px}.field{display:block;min-width:0}.field>span,.field-label{display:flex;align-items:center;gap:3px;font-size:12px;color:var(--muted);margin-bottom:5px}.field>span>small{font-size:10px;margin-left:4px;font-weight:400}.global-controls{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px}.global-controls input[type=datetime-local]{font-size:12px;padding-left:6px}.mode-field{margin-top:11px}.mode-switch{display:grid;gap:5px}.mode-switch button{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:34px;padding:6px 9px;background:#f9fbf9;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:12px}.mode-switch strong{font-weight:500}.mode-switch button>span{font-variant-numeric:tabular-nums;font-size:11px}.mode-switch button[aria-pressed=true]{color:var(--green);background:#eaf5ee;border-color:#96bca7}.groups-field{width:120px;margin-top:10px}.section-note{font-size:12px;line-height:1.75;color:var(--muted);margin-top:8px}.global-times{margin-top:10px;font-size:12px;color:var(--muted)}summary{cursor:pointer}.global-times-grid{display:grid;gap:10px;margin-top:9px}.arrival-auto-controls{display:grid;gap:11px;margin-top:11px}.arrival-auto-controls+.section-note{margin-bottom:8px}.number-with-unit{display:flex;align-items:center;min-height:36px;overflow:hidden;border:1px solid #ccddd2;border-radius:6px;background:#fff}.number-with-unit:focus-within{border-color:var(--green);box-shadow:0 0 0 3px #176b5015}.number-with-unit input{border:0;box-shadow:none;padding-right:3px}.number-with-unit>span{color:var(--muted);font-size:12px;padding-right:8px;white-space:nowrap}.section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 0 10px}.section-heading h2{font-size:14px;font-weight:600}.section-heading p{font-size:11px;color:var(--muted);margin-top:3px}.unit-switch{display:flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:6px;background:var(--soft);width:max-content;max-width:100%;margin-bottom:8px}.unit-switch button{border:0;background:transparent;color:var(--muted);font-size:12px;padding:4px 9px;border-radius:4px}.unit-switch button[aria-pressed=true]{background:var(--green);color:#fff}.parameter-help{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:10px}.parameter-help>span:first-child{width:100%;margin-bottom:3px}.station-editor{box-shadow:var(--shadow-soft);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#fff;overflow:hidden}.station-editor>summary{display:flex;align-items:center;gap:8px;padding:10px;list-style:none;position:relative}.station-editor>summary::-webkit-details-marker{display:none}.station-editor>summary:after{content:'⌄';color:var(--muted);font-size:17px;margin-left:auto}.station-editor[open]>summary:after{transform:rotate(180deg)}.station-editor[open]>summary{background:#f6faf7;border-bottom:1px solid var(--line)}.station-summary-name{min-width:0}.station-summary-name strong{display:block;font-size:13px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.station-summary-name small{display:block;font-size:11px;color:var(--muted);margin-top:2px}.station-number{font-size:11px;color:var(--muted);white-space:nowrap}.station-body{padding:11px}.station-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.station-name{font-weight:500}.station-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid #edf1ed;gap:8px}.station-footer>span{font-size:11px;color:var(--muted)}.row-actions{display:flex;gap:2px}.row-action{display:grid;place-items:center;width:28px;height:30px;border:0;background:transparent;color:#74877b;border-radius:5px;padding:0;font-size:17px}.row-action:hover,.row-action:focus-visible{background:#eaf3ec;color:var(--green)}.row-action.remove:hover,.row-action.remove:focus-visible{background:#fff1ed;color:var(--red)}.row-action:disabled{opacity:.25}.row-disabled{background:#f5f7f5}.row-disabled>summary{color:#8ba092}.time-input{display:flex;align-items:center;overflow:hidden;min-height:36px;border:1px solid #ccddd2;border-radius:6px;background:#fff}.time-input:focus-within{border-color:var(--green);box-shadow:0 0 0 3px #176b5015}.time-input input{border:0;box-shadow:none!important;text-align:right;padding:7px 6px;min-height:34px}.time-input span{font-size:11px;color:var(--muted);white-space:nowrap;padding-right:6px;flex-shrink:0}.time-input.mixed input[data-part=minutes]{width:40%;min-width:26px}.time-input.mixed input[data-part=seconds]{width:60%;min-width:32px}.field-error:empty{display:none}.field-error{display:block;color:var(--red);font-size:11px;line-height:1.5;margin-top:5px}.row-error{border-color:#dcaa9e}.table-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;color:var(--muted);margin:12px 0}.table-footer .text-button{font-size:11px}.breaks-section{border-top:1px solid var(--line);margin-top:15px}.break-row{box-shadow:var(--shadow-soft);display:grid;grid-template-columns:18px minmax(0,1fr) 26px;gap:9px;padding:11px;border:1px solid var(--line);border-radius:8px;margin-bottom:9px;background:#fafcf9}.break-row .break-enable{grid-column:1;grid-row:1/4;padding-top:22px}.break-row .break-name,.break-row .break-stage,.break-row .break-duration{grid-column:2;display:block;min-width:0}.break-row label>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.break-row .row-action{grid-column:3;grid-row:1}.break-row.disabled{opacity:.65}
+.main-column{display:grid;gap:17px;min-width:0}.metric-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric-card{padding:17px 16px 15px;background:#fff;border:1px solid var(--line);border-radius:11px;min-width:0;box-shadow:var(--shadow)}.metric-label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;min-height:23px}.metric-value{font-size:28px;line-height:1.2;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.4px;margin:12px 0 9px;color:var(--ink);overflow-wrap:anywhere;min-height:34px}.metric-value .u,.metric-value .rest{font-size:14px;font-weight:400;letter-spacing:0;margin-left:3px}.metric-meta{font-size:11px;color:var(--muted);line-height:1.65}.metric-meta strong{font-weight:500;color:var(--ink)}.surface{background:#fff;border:1px solid var(--line);border-radius:11px;min-width:0;box-shadow:var(--shadow)}.advice-card{padding:12px 18px 15px;background:#fff8e9;border-color:#e9dfc5}.advice-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}.advice-heading h2{font-size:14px;font-weight:600}.advice-mark{color:var(--green);font-size:18px}.advice-card #capacity-hint{display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:13px;line-height:1.85}.advice-card #capacity-hint>span{min-width:0}.advice-card #capacity-hint .text-button{white-space:nowrap;flex-shrink:0}.results-panel{padding:19px 20px 21px}.results-heading h2{font-size:18px;font-weight:600}.results-heading p{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.7}.result-tabs{display:flex;gap:22px;flex-wrap:wrap;position:sticky;top:var(--bar-height);z-index:15;background:#fff;border-bottom:1px solid var(--line);padding-top:12px}.result-tabs button{position:relative;border:0;background:transparent;color:var(--muted);font-size:13px;padding:9px 0 10px;white-space:nowrap}.result-tabs button[aria-selected=true]{color:var(--green);font-weight:600}.result-tabs button[aria-selected=true]:after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--green)}.schedule-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 0}.schedule-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}.schedule-controls label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.schedule-controls input{width:64px;min-height:32px;font-size:13px;padding:5px 7px}.schedule-controls select{width:auto;max-width:175px;min-height:32px;padding:5px 7px;font-size:12px}.schedule-caption{font-size:12px;color:var(--muted)}.pagination{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.pagination .button{font-size:12px;min-height:31px;padding:5px 9px}.timeline-axes{display:grid;grid-template-columns:170px minmax(0,1fr);position:sticky;top:calc(var(--bar-height) + var(--tabs-height));z-index:10;background:#fff;border-bottom:1px solid var(--line);min-height:39px}.axis-key{display:flex;align-items:center;padding-left:9px;font-size:12px;color:var(--muted)}.time-axis-window{overflow:hidden;min-width:0}.time-axis{display:block}.timeline-shell{display:grid;grid-template-columns:170px minmax(0,1fr);border-bottom:1px solid var(--line);background:#fcfefd}.timeline-names{background:#fff;border-right:1px solid var(--line)}.timeline-name{height:48px;padding:6px 9px;border-bottom:1px solid #eaf0ea;display:flex;flex-direction:column;justify-content:center;min-width:0}.timeline-name strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550}.timeline-name small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.timeline-scroll{overflow-x:auto;overflow-y:hidden;min-width:0}.timeline{display:block;height:auto}.timeline text,.time-axis text{font-family:inherit;font-size:12px;fill:var(--muted)}.timeline .bar-label{font-size:11px;fill:#fff;pointer-events:none}.task{cursor:pointer}.task:hover,.task:focus{filter:brightness(.92);outline:none;stroke:var(--dark);stroke-width:1.5}.schedule-help{font-size:12px;color:var(--muted);line-height:1.85;margin-top:10px}.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}.legend span{display:inline-flex;align-items:center;gap:5px}.legend i{width:9px;height:9px;display:inline-block;border-radius:2px}.legend .wait-mark{background:repeating-linear-gradient(45deg,#edf0ed 0 3px,#bdc8c0 3px 4px)}.legend .break-mark{background:#eed5a6}.break-legend{font-size:12px;color:var(--amber);line-height:1.8;margin-top:8px}.station-operations{border-top:1px solid var(--line);margin-top:22px;padding-top:17px}.station-operations h3{font-size:15px;font-weight:600}.station-operations .section-note{margin:7px 0 12px}.table-scroll{position:relative;overflow-x:auto;min-width:0;border:1px solid var(--line);border-radius:7px}.result-table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px;font-size:12px}.result-table th{background:#f3f7f4;color:var(--muted);font-weight:500;text-align:left;padding:11px 10px;white-space:nowrap;border-bottom:1px solid var(--line)}.result-table td{padding:11px 10px;border-bottom:1px solid #e6eee7;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink)}.result-table tbody tr:last-child td{border-bottom:0}.result-table tbody tr:hover{background:#f8fbf7}.result-table small{display:block;font-size:11px;color:var(--muted);line-height:1.65;margin-top:3px}.result-table .station-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px}.operations-table{min-width:1210px}.operations-table th:first-child,.operations-table td:first-child{position:sticky;left:0;background:#fff;z-index:2;min-width:140px}.operations-table th:first-child{background:#f3f7f4;z-index:3}.operations-table td.utilization-cell{font-weight:600;color:var(--green)}.capacity-table{min-width:760px}.capacity-table input{width:65px;min-height:32px}.capacity-target{display:flex;align-items:center;gap:7px}.capacity-note{font-size:13px;color:var(--muted);line-height:1.85;margin:13px 0}.positive{color:var(--green)!important}.negative{color:var(--amber)!important}.undo-area{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted);padding:12px 0 0}.empty-results,.empty-view{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}.arrival-note{background:#f4f8f4;border:1px solid #e1ebe3;padding:13px 15px;border-radius:8px;font-size:13px;line-height:1.9;color:#476453;margin:14px 0}.arrival-note .text-button{display:block;margin-top:7px}.arrival-table{min-width:850px}.validation-banner{background:#fff4ed;border:1px solid #e3b2a2;color:#924435;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.8}.validation-banner button{border:0;background:#fbe4d9;color:#91432f;padding:4px 8px;border-radius:4px;font-size:12px}.table-scroll.is-fitting{overflow:visible}.table-scroll.is-fitting th{position:sticky;top:calc(var(--bar-height) + var(--tabs-height));z-index:9}.table-scroll.is-fitting .operations-table th{position:static}
+.sidebar-backdrop{position:fixed;inset:0;z-index:45;background:#183c2d50;border:0;backdrop-filter:blur(2px)}dialog{width:min(650px,calc(100vw - 32px));max-height:85dvh;background:#fff;border:1px solid var(--line);border-radius:12px;padding:23px;color:var(--ink);box-shadow:0 18px 65px #12362626}dialog::backdrop{background:#16392c50;backdrop-filter:blur(2px)}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.dialog-head h2{font-size:18px}.help-content{font-size:14px;line-height:1.9}.help-content h3{font-size:15px;margin:17px 0 5px;color:var(--green)}.help-content p{color:#4f695b;margin-bottom:9px}.help-content .formula{padding:10px 12px;border-radius:6px;background:var(--soft);font-size:13px;color:var(--green)}.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.timeline-tooltip{position:fixed;z-index:60;max-width:340px;padding:11px 13px;background:#153f30;color:#edf7f0;border-radius:7px;box-shadow:0 8px 24px #19382e20;font-size:12px;line-height:1.85;pointer-events:none}.timeline-tooltip strong{display:block;color:#fff;margin-bottom:3px}.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:calc(100vw - 32px);z-index:70;padding:10px 17px;background:#153f30;color:#fff;font-size:13px;border-radius:7px;box-shadow:0 6px 24px #143b2d25;text-align:center}
+@media(min-width:1700px){.workspace-layout{gap:24px}.metric-cards{gap:16px}.metric-card{padding:20px}.metric-value{font-size:34px}}
+@media(max-width:1250px){.app-bar{gap:14px;padding-left:18px;padding-right:18px}.save-state{display:none}.brand h1{font-size:17px}.brand p{font-size:10px}.workspace-layout{padding-left:18px;padding-right:18px;gap:16px}.metric-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.results-panel{padding:17px}.advice-card #capacity-hint{align-items:flex-start}.metric-value{margin:9px 0 6px}}
+@media(max-width:1099px){.workspace-layout{display:block;padding:17px 18px 35px}.settings-sidebar{position:fixed;top:0;left:0;bottom:0;width:min(330px,calc(100vw - 24px));max-height:100dvh;border-radius:0 12px 12px 0;z-index:50}.settings-sidebar .sidebar-content{padding-bottom:30px}.main-column{gap:15px}.metric-cards{grid-template-columns:repeat(4,minmax(0,1fr))}body.drawer-open{overflow:hidden}.sidebar-toggle{margin-left:0}.toolbar{margin-left:0}.brand p{display:none}.app-bar{flex-wrap:wrap;gap:10px 14px}.toolbar{margin-left:auto}}
+@media(max-width:760px){.app-bar{padding:10px 13px}.brand-mark{width:31px;height:31px;font-size:13px}.brand h1{font-size:16px}.toolbar{order:3;width:100%;justify-content:flex-end}.toolbar .button{font-size:12px;padding:5px 9px;min-height:32px}.sidebar-toggle{width:32px;height:32px;min-height:32px}.workspace-layout{padding:12px 10px 28px}.metric-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.metric-card{padding:13px 12px}.metric-value{font-size:25px}.metric-label{font-size:12px}.metric-meta{font-size:11px}.results-panel{padding:14px 12px}.advice-card{padding:13px}.advice-card #capacity-hint{display:block;font-size:12px}.advice-card #capacity-hint .text-button{display:block;margin-top:8px}.result-tabs{gap:7px 17px;padding-top:8px}.result-tabs button{font-size:12px}.timeline-axes,.timeline-shell{grid-template-columns:125px minmax(0,1fr)}.timeline-name{padding-left:6px;padding-right:6px}.timeline-name strong{font-size:11px}.timeline-name small{font-size:10px}.station-operations h3{font-size:14px}.schedule-controls{gap:8px}.schedule-controls label,.schedule-help,.section-note{font-size:11px}.schedule-controls select{max-width:150px}.results-heading h2{font-size:16px}}
+@media(max-width:390px){.brand h1{font-size:14px}.brand-mark{width:27px;height:27px}.brand{gap:7px}.sidebar-toggle{width:28px;height:28px;min-height:28px}.metric-value .u,.metric-value .rest{font-size:12px}.metric-label .hint-button{width:17px;height:17px}.timeline-axes,.timeline-shell{grid-template-columns:114px minmax(0,1fr)}.metric-meta{font-size:10px}.sidebar-content{padding-left:12px;padding-right:12px}.global-controls{grid-template-columns:72px minmax(0,1fr)}}
+@media(pointer:coarse){input,select{font-size:16px}.hint-button{width:23px;height:23px}.row-action{width:32px;height:34px}.close-button{width:36px;height:36px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+@media print{.app-bar,.settings-sidebar,.sidebar-backdrop,.button,.result-tabs,.advice-card,.text-button,.hint-button{display:none!important}.workspace-layout{display:block;padding:0}body{background:#fff}.main-column{display:block}.surface{box-shadow:none;border-color:#aaa}.metric-cards{margin-bottom:15px}.timeline-axes{position:static}.table-scroll,.timeline-scroll{overflow:visible}dialog,.toast,.timeline-tooltip{display:none!important}}
+
+.icon-button{display:inline-grid;place-items:center;width:36px;height:36px;flex-shrink:0;padding:0;border:0;border-radius:7px;background:transparent;color:var(--muted)}.icon-button:hover,.icon-button[aria-expanded=true]{background:#edf2ef;color:var(--ink)}.sidebar-toggle{margin-left:-5px}.metric-selector{min-height:26px;height:26px;font-size:12px;padding:0 16px 0 0;border:0;border-radius:3px;background-color:transparent;color:var(--muted);cursor:pointer;box-shadow:none}.metric-selector:hover{color:var(--green)}.metric-selector:focus-visible{outline:2px solid #4b9d7c;outline-offset:3px;box-shadow:none}.metric-meta .hint-button{vertical-align:baseline;margin-left:2px}.advice-heading .close-button{margin-right:-5px}.advice-heading .close-button:hover{background:#f6edda}.brand{min-width:0}.sidebar-heading p{font-size:11px}
+@media(min-width:1100px){.sidebar-heading #sidebar-close{display:none}}
+@media(max-width:760px){.app-bar{gap:10px}.brand{flex:1}.brand h1{font-size:15px}.metric-selector{font-size:11px}.metric-meta .hint-button{width:17px;height:17px}}
+@media(max-width:390px){.app-bar .brand h1{font-size:14px}.brand-mark{display:none}.sidebar-toggle{margin-left:0}}
+
+/* Small depth and clearer interactive states, keeping the existing layout. */
+:root{--shadow:0 4px 18px #19382e09,0 1px 3px #19382e08;--line:#dfe7e2}
+.app-bar{box-shadow:0 2px 12px #19382e05}.brand-mark{box-shadow:inset 0 1px 0 #ffffff22,0 2px 5px #176b5020}
+.button,.icon-button,.metric-selector,.row-action{transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.button.primary{box-shadow:0 2px 5px #176b501c}.button svg{flex-shrink:0}.metric-card{border-radius:12px}.metric-value{letter-spacing:-.6px}
+.result-tabs button:hover{color:var(--ink)}.result-tabs button[aria-selected=true]{color:var(--green)}
+.timeline-shell{border-radius:0 0 7px 7px;overflow:hidden;background:#fafcfb}.timeline-scroll{cursor:crosshair;scrollbar-color:#b8c9be #f0f4f1;scrollbar-width:thin}.timeline-names{box-shadow:2px 0 5px #19382e04;z-index:1}
+.timeline-cursor{pointer-events:none}.result-table tbody tr:nth-child(even){background:#fafcfb}.result-table tbody tr:hover{background:#f0f6f2}
+.operations-table tbody tr:nth-child(even) td:first-child{background:#fafcfb}.operations-table tbody tr:hover td:first-child{background:#f0f6f2}
+.result-table th{font-weight:550}.save-state:before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:#70a48a;margin-right:6px;vertical-align:2px}
+.timeline-tooltip{width:360px;max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px);overflow:hidden;background:#fff;color:var(--ink);border:1px solid #d5e2d9;border-radius:11px;padding:14px 15px;box-shadow:0 12px 38px #173d2e22,0 2px 7px #173d2e0d;line-height:1.7}
+.timeline-tooltip strong{color:var(--ink);margin:0;display:inline;font-weight:600}.tip-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:9px;border-bottom:1px solid var(--line)}.tip-heading strong{min-width:0;overflow-wrap:anywhere;font-size:13px}.tip-heading time{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}.tip-heading .station-dot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%}
+.tip-counts{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:var(--muted);padding:10px 0}.tip-counts b{font-size:14px;color:var(--ink);margin:0 2px}.tip-people{border-top:1px solid #edf1ee}.tip-person{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #edf1ee}.tip-person>span:last-child{text-align:right}.tip-person strong{font-variant-numeric:tabular-nums;font-size:13px}.tip-person b{font-size:11px;font-weight:500}.tip-person small,.tip-batch small,.tip-next small{display:block;color:var(--muted);font-size:10px;line-height:1.65}.tip-batch{background:#f2f7f4;border:1px solid #e4eee7;border-radius:6px;padding:9px 11px}.tip-batch strong,.tip-batch span{display:block}.tip-batch span{font-size:12px;margin:3px 0;overflow-wrap:anywhere}.tip-idle{padding:7px 10px;background:#f5f7f5;border-radius:6px;color:var(--muted);font-size:12px}.tip-next{padding-top:9px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:11px}.tip-next>span{color:var(--muted)}.tip-next strong{font-size:11px}.tip-next small{grid-column:1/-1}.tip-action{font-size:10px;color:var(--muted);padding-top:9px}.tip-more{font-size:11px;color:var(--muted);padding-top:6px}
+#snapshot-dialog{width:min(820px,calc(100vw - 24px))}.snapshot-state{font-size:13px;color:var(--muted);margin-bottom:17px}#snapshot-content h3{font-size:14px;font-weight:600;margin:18px 0 10px}.snapshot-empty{font-size:13px;color:var(--muted);padding:14px;background:var(--soft);border-radius:6px}.snapshot-table{min-width:620px}.snapshot-table td,.snapshot-table th{padding:10px 12px}
+.export-description{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:16px}.export-options{display:grid;gap:10px}.export-option{display:flex;align-items:center;gap:15px;text-align:left;width:100%;border:1px solid var(--line);border-radius:9px;padding:15px;background:#fff;color:var(--ink)}.export-option:hover{background:var(--soft);border-color:#9ab9a7}.export-option svg{flex-shrink:0;color:var(--green)}.export-option strong{display:block;font-size:14px;font-weight:600}.export-option small{display:block;color:var(--muted);font-size:12px;margin-top:4px;line-height:1.6}.export-option .format-tag{margin-left:auto;font-size:11px;border:1px solid var(--line);color:var(--muted);border-radius:4px;padding:3px 6px}.export-footnote{font-size:11px;line-height:1.8;color:var(--muted);margin-top:14px}
+@media(max-width:760px){.toolbar .button svg{display:none}.tip-person{padding:6px 0}.timeline-tooltip{padding:11px 12px}.export-option{padding:13px;gap:11px}.export-option .format-tag{display:none}}
+
+</style>
+</head>
+<body>
+<a class="skip-link" href="#sidebar-toggle">跳到侧栏开关</a>
+<div class="app" id="app">
+  <header class="app-bar" id="app-bar">
+    <button class="icon-button sidebar-toggle" id="sidebar-toggle" aria-label="切换方案设置侧栏" title="切换侧栏" aria-expanded="true" aria-controls="settings-pane"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">TF</span><div><h1>测试排程与耗时计算器</h1><p>TestFlow · 现场组织与测试容量规划</p></div></div>
+    
+    <div class="toolbar"><span id="storage-status" class="save-state" role="status">自动保存</span><button class="button quiet" id="load-plan"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h7l2 3h9v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M12 3v9m-3-3 3 3 3-3"/></svg>载入方案</button><button class="button quiet" id="save-plan"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 3h12l4 4v14H3V3h2Z"/><path d="M7 3v6h9V3M7 21v-7h10v7"/></svg>保存方案</button><button class="button primary" id="export-csv" aria-haspopup="dialog"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg>导出排程</button><button class="help-button" id="help-open" aria-label="打开使用说明">?</button><input id="import-file" type="file" accept=".json,application/json" hidden></div>
+  </header>
+  <main class="workspace-layout" id="workspace-layout">
+    <aside id="settings-pane" class="settings-sidebar" aria-labelledby="settings-title">
+      <div class="sidebar-heading"><div><h2 id="settings-title">方案设置</h2><p>修改参数，右侧结果实时更新。</p></div><button id="sidebar-close" class="icon-button" aria-label="关闭方案设置侧栏" title="关闭侧栏"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button></div>
+      <div class="sidebar-content">
+        <details class="sidebar-section" id="global-section" open><summary>全场安排</summary><div class="section-content">
+          <div class="global-controls">
+            <label class="field"><span>测试人数</span><div class="number-with-unit"><input id="n" data-global="n" type="number" min="1" max="500" step="1" aria-label="测试人数"><span>人</span></div><small class="field-error" data-error-for="n"></small></label>
+            <label class="field"><span>开场日期与时间 <small>可选</small></span><input id="start" data-global="start" type="datetime-local" step="1"><small class="field-error" data-error-for="start"></small></label>
+          </div>
+          <div class="mode-field"><span class="field-label">测试安排模式</span><div class="mode-switch" role="group" aria-label="测试安排模式"><button data-mode="个人流水线" aria-pressed="true"><strong>个人流水线</strong><span id="cost-pipeline">—</span></button><button data-mode="全员逐站完成" aria-pressed="false"><strong>全员逐站完成</strong><span id="cost-sequential">—</span></button><button data-mode="分组轮转" aria-pressed="false"><strong>分组同步轮转</strong><span id="cost-rotation">—</span></button></div><small class="field-error" data-error-for="mode"></small></div>
+          <label class="field groups-field" id="group-controls" hidden><span>轮转组数</span><input id="groups" data-global="groups" type="number" min="1" max="20" step="1" placeholder="自动分组"><small class="field-error" data-error-for="groups"></small></label>
+          <p class="section-note" id="mode-note"></p>
+          <details class="global-times" id="global-times"><summary>开场、收尾与机动预留</summary><p id="global-time-summary" class="section-note"></p><div class="global-times-grid"><label class="field"><span>开场准备 / 首批热身</span><div id="prep-time"></div><small class="field-error" data-error-for="prep"></small></label><label class="field"><span>结束收尾时间</span><div id="close-time"></div><small class="field-error" data-error-for="close"></small></label><label class="field"><span>机动预留时间</span><div id="buffer-time"></div><small class="field-error" data-error-for="buffer"></small></label></div><p class="section-note">现场总时长包括开场准备、测试、整体休息与收尾。机动时间另加到建议预留，不改变实际排程。</p></details>
+        </div></details>
+        <details class="sidebar-section" id="arrival-section"><summary>到场安排 <span id="arrival-setting-summary" class="section-summary"></span></summary><div class="section-content">
+          <label class="field"><span>人员到场方式 <button class="hint-button" type="button" data-help="arrivals" aria-label="查看到场安排说明">?</button></span><select id="arrival-mode" data-global="arrivalMode"><option value="auto">自动分批到场</option><option value="all">全体集中到场</option></select><small class="field-error" data-error-for="arrivalMode"></small></label>
+          <div id="arrival-auto-controls" class="arrival-auto-controls"><label class="field"><span>每批到场人数</span><input id="arrival-batch-size" data-global="arrivalBatchSize" type="number" min="1" max="500" step="1" placeholder="留空，按起始站点人数上限"><small class="field-error" data-error-for="arrivalBatchSize"></small></label><label class="field"><span>提前到场准备时间</span><div id="arrival-lead-time"></div><small class="field-error" data-error-for="arrivalLead"></small></label></div>
+          <p class="section-note" id="arrival-mode-note"></p><button class="text-button" data-go-view="arrivals">查看每批到场时间与人数</button>
+        </div></details>
+        <section class="stations-section" aria-labelledby="stations-title">
+          <div class="section-heading"><div><h2 id="stations-title">测试站点</h2><p id="station-count"></p></div><button class="button small" id="add-station">＋ 添加站点</button></div>
+          <div class="unit-switch" role="group" aria-label="时间输入形式"><button data-format="sec" aria-pressed="true">秒数输入</button><button data-format="mixed" aria-pressed="false">分钟＋秒数输入</button></div>
+          <div class="parameter-help"><span>站点参数直接在展开的站点内编辑。</span><button class="hint-button" type="button" data-help="reset" aria-label="查看复位时间说明">?</button><span>复位时间</span><button class="hint-button" type="button" data-help="gap" aria-label="查看离站间隔说明">?</button><span>离站间隔</span></div>
+          <div id="station-list"></div><small class="field-error" data-error-for="stations"></small>
+          <div class="table-footer"><span>最多 500 人、20 个站点</span><button class="text-button" id="load-example">载入初始方案</button></div>
+        </section>
+        <section class="breaks-section" aria-labelledby="breaks-title"><div class="section-heading"><div><h2 id="breaks-title">整体休息</h2><p id="break-count"></p></div><button class="button small" id="add-break">＋ 添加休息</button></div><div id="break-list"></div><small class="field-error" data-error-for="breaks"></small><p class="section-note" id="breaks-note"></p></section>
+      </div>
+    </aside>
+    <div class="main-column" id="main-column">
+      <div id="validation-banner" class="validation-banner" role="alert" hidden></div>
+      <section class="metric-cards" id="summary-bar" aria-label="排程关键指标" aria-live="polite"></section>
+      <section class="surface advice-card" id="capacity-card" aria-labelledby="capacity-advice-title"><div class="advice-heading"><h2 id="capacity-advice-title">容量调整建议</h2><button id="dismiss-capacity" class="close-button" aria-label="关闭容量调整建议" title="关闭建议">×</button></div><div id="capacity-hint"></div></section>
+      <section id="results-pane" class="surface results-panel" aria-labelledby="results-title">
+        <div class="results-heading"><div><h2 id="results-title">排程结果</h2><p id="result-context"></p></div></div>
+        <div id="results-empty" class="empty-results" hidden>修正参数后，排程结果自动更新。</div>
+        <div id="valid-results">
+          <div class="result-tabs" role="tablist" aria-label="结果视图"><button id="tab-stations" data-view="stations" role="tab" aria-selected="true" aria-controls="schedule-view">站点时间轴</button><button id="tab-people" data-view="people" role="tab" aria-selected="false" aria-controls="schedule-view" tabindex="-1">人员时间轴</button><button id="tab-details" data-view="details" role="tab" aria-selected="false" aria-controls="schedule-view" tabindex="-1">排程明细</button><button id="tab-arrivals" data-view="arrivals" role="tab" aria-selected="false" aria-controls="schedule-view" tabindex="-1">到场安排</button><button id="tab-capacity" data-view="capacity" role="tab" aria-selected="false" aria-controls="schedule-view" tabindex="-1">容量试算</button></div>
+          <div id="schedule-view" role="tabpanel" aria-labelledby="tab-stations"></div>
+          <section id="station-operations" class="station-operations" aria-labelledby="operations-title"></section>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<button id="sidebar-backdrop" class="sidebar-backdrop" aria-label="收起方案设置" hidden></button>
+<dialog id="info-dialog" aria-labelledby="info-title"><div class="dialog-head"><h2 id="info-title"></h2><button class="close-button" data-close="info-dialog" aria-label="关闭指标说明">×</button></div><div id="info-content" class="help-content"></div></dialog>
+<dialog id="snapshot-dialog" aria-labelledby="snapshot-title"><div class="dialog-head"><h2 id="snapshot-title"></h2><button class="close-button" data-close="snapshot-dialog" aria-label="关闭此时站点人员名单">×</button></div><div id="snapshot-content"></div></dialog>
+<dialog id="export-dialog" aria-labelledby="export-title"><div class="dialog-head"><h2 id="export-title">导出排程</h2><button class="close-button" data-close="export-dialog" aria-label="关闭导出选项">×</button></div><p class="export-description">导出当前方案的全部人员，包含站点运行、整体休息和到场安排。</p><div class="export-options"><button class="export-option" id="export-excel"><svg width="28" height="32" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 1h10l6 6v20H4Z"/><path d="M14 1v7h6M8 13h8m-8 4h8m-8 4h8m-4-8v8"/></svg><span><strong>带样式的 Excel 排程</strong><small>总览、人员排程、站点排程、到场安排四个工作表。<br>已设置字体、列宽、颜色、边框、筛选和冻结表头。</small></span><span class="format-tag">.xlsx</span></button><button class="export-option" id="export-raw-csv"><svg width="28" height="32" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 1h10l6 6v20H4Z"/><path d="M14 1v7h6M8 14h8m-8 4h8m-8 4h8"/></svg><span><strong>CSV 原始数据</strong><small>合并全部测试、休息与到场记录，适合导入其他软件。<br>CSV 格式不保存字体、颜色或边框。</small></span><span class="format-tag">.csv</span></button></div><p class="export-footnote">填写开场日期与时间后，Excel 会导出实际日期和钟点；未填写时，时刻列显示距全场开场的累计秒数。导出文件对应当前方案，调整参数后请重新导出。</p></dialog>
+<dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-head"><h2 id="help-title">使用说明</h2><button class="close-button" data-close="help-dialog" aria-label="关闭使用说明">×</button></div><div class="help-content">
+  <h3>调整方案与查看结果</h3><p>首页四张卡片可以点击指标名称选择展示内容，选择会自动保留，并随保存的方案一起导出。在方案设置侧边栏修改人数、站点参数、休息与到场方式，结果自动更新。收起侧边栏可获得更宽的时间轴与数据表；再次展开保留输入。站点可分别展开编辑，排序和删除按钮位于各站点参数底部。</p>
+  <h3>独立工位与整批测试</h3><p>独立工位中，每个工位一次接待一人，各工位可以分别开测；同时测试人数对应可用工位数。整批测试中，一批人共同开始、共同结束，每批人数上限对应可接待人数，本站一次运行一批。完整耗时包含本站全部测试次数及占用休息，最后不足一批仍按完整批次耗时计算。</p><p>“凑满再开”在本批人员到齐后开测；“有人即开”在站点空闲时接待已就位人员，开测后不再加入。</p>
+  <h3>复位时间与离站间隔</h3><p>复位时间决定同一工位或同一批次资源何时可接待下一人或下一批；离站间隔决定个人完成本站后，何时可以进入下一站。两段时间同时经过，可以重叠。点击“测试站点”下方的问号可查看定义与示例。</p>
+  <h3>整体休息</h3><p>按站点顺序安排时，选择某站全部完成后休息；分组同步轮转时，选择某轮全部完成后休息。全体完成所选阶段后统一休息，再继续后续测试，完整的单人或整批测试不会被休息拆开。支持多段休息；整体休息可满足已经经过的复位与最低离站间隔。</p>
+  <h3>集中到场与分批到场</h3><p>集中到场按所有人在首轮开测时就位计算。分批到场先计算既定人员顺序下的首站开测安排，再按每批人数安排就位；建议到场时间为就位时间减去提前准备时间。按起始站点人数上限分批且准时就位时，首站理论排队时间为零；增大每批人数可减少到场批次数，但会增加首站等待。</p><p>提前准备用于签到、热身或现场说明，不计入本站排队时间。建议时刻依赖设定的测试时长、人员顺序及准时执行；后续站点的等待仍按排程计算。分组同步轮转按各组起始站点分别安排到场。</p>
+  <h3>站点运行与排队情况</h3><p>工作时长为本站首次开测至最后测完的时间跨度。独立工位的工位使用率为实际占用工位总时长除以“工位数×工作时长”；整批测试按每批人数上限计算人数位置占用率。复位、空闲和运行期间的整体休息包含在跨度中，会降低使用率。</p><p>个人完成上一站并满足最低离站间隔后，至下一站实际开测前的排队、凑批与统一换站等待均计入，首站则从本批就位时开始计算；整体休息与提前准备不计入。人均累计等待时间先将每个人各站等待相加，再除以总测试人数。峰值等待人数为同一时刻等待测试的不同人员数量最大值，各站峰值不能直接相加。它不是现场总人数；统一换站的等待人员也不一定都在下一站排队。</p>
+  <h3>时间轴上的人员与等待</h3><p>在站点时间轴上移动鼠标，可查看该时刻正在测试的人员、所在工位或批次、剩余测试时间和等待测试人数。整批测试同时列出本批人员范围；点击任意时刻可展开完整的测试与等待名单。键盘聚焦色块时显示该段开始时刻，按回车展开名单。</p>
+  <h3>保存与导出</h3><p>有效方案自动保存在当前浏览器。保存 JSON 方案可以备份或在其他设备载入，旧版方案仍可载入。带样式的 Excel 包含排程总览、人员排程、站点排程、到场安排四个工作表，并设置筛选和冻结表头。CSV 提供原始记录，不保存文字或表格样式。两种格式均包含全部人员。</p><p>填写开场时间后，Excel 时刻列保存实际日期和钟点；未填写时保存距全场开场的累计秒数，负数表示开场前。测试与等待时长使用可计算的数值，保留小数秒。导出的内容对应当前方案，调整参数后请重新导出。</p>
+</div></dialog>
+<dialog id="confirm-dialog" aria-labelledby="confirm-title"><div class="dialog-head"><h2 id="confirm-title">替换当前方案</h2><button class="close-button" data-close="confirm-dialog" aria-label="关闭">×</button></div><p>载入文件中的初始方案，将替换当前参数。</p><div class="dialog-actions"><button class="button" data-close="confirm-dialog">取消</button><button class="button primary" id="confirm-example">载入</button></div></dialog>
+<div id="timeline-tooltip" class="timeline-tooltip" role="tooltip" hidden></div><div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function (root) {
+  'use strict';
+  const MODES = ['个人流水线', '分组轮转', '全员逐站完成'];
+  function localDate(value) {
+    if (typeof value !== 'string') return null;
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/);
+    if (!match) return null;
+    const p = match.slice(1,7).map(v => Number(v || 0));
+    const millis = Number((match[7] || '').padEnd(3,'0'));
+    const d = new Date(p[0], p[1] - 1, p[2], p[3], p[4], p[5],millis);
+    if (d.getFullYear() !== p[0] || d.getMonth() !== p[1] - 1 || d.getDate() !== p[2] || d.getHours() !== p[3] || d.getMinutes() !== p[4] || d.getSeconds() !== p[5]) return null;
+    return d.getTime();
+  }
+  function validate(raw) {
+    const errors = [], error = (key, message) => errors.push({key, message});
+    if (!raw || typeof raw !== 'object') return {errors:[{key:'n',message:'请填写排程参数'}],config:null};
+    const number = value => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value));
+    const integer = (value, min, max) => number(value) && Number.isInteger(Number(value)) && Number(value) >= min && Number(value) <= max;
+    const factor = raw.timeUnit === 'sec' ? 1000 : 60000;
+    function seconds(value, key, label, required = false) {
+      if (!required && (value === '' || value == null)) return 0;
+      const ticks = Math.round(Number(value) * factor);
+      if (!number(value) || Number(value) < 0 || (required && Number(value) <= 0) || !Number.isSafeInteger(ticks) || (required && ticks < 1)) {
+        error(key, `${label}需填写${required ? '大于 0' : '不小于 0'}的有效时长`); return 0;
+      }
+      if (Math.abs(Number(value) * factor - ticks) > .00001) error(key, `${label}换算后的小数秒最多保留 3 位`);
+      return ticks / 1000;
+    }
+    if (raw.timeUnit != null && !['sec','min'].includes(raw.timeUnit)) error('timeUnit','时间单位无效');
+    if (!integer(raw.n,1,500)) error('n','测试人数需为 1–500 的整数');
+    if (!MODES.includes(raw.mode)) error('mode','请选择有效的安排模式');
+    let startMs = null;
+    if (raw.start != null && raw.start !== '') {
+      startMs = typeof raw.start === 'number' ? Date.UTC(1899,11,30) + raw.start * 86400000 : localDate(raw.start);
+      if (!Number.isFinite(startMs) || startMs === null) error('start','开场时间不是有效的本地日期时间');
+    }
+    const input = Array.isArray(raw.stations) ? raw.stations : [];
+    if (input.length > 20) error('stations','最多设置 20 个站点');
+    const stations = [];
+    input.forEach((s,i) => {
+      if (!s || s.enabled === false) return;
+      const key = `station.${i}`, label = `第 ${i + 1} 站`, name = String(s.name ?? '').trim();
+      if (!name || name.length > 100) error(`${key}.name`,`${label}名称需为 1–100 字的文本`);
+      if (!['independent','batch'].includes(s.kind)) error(`${key}.kind`,`${label}请选择测试方式`);
+      if (!integer(s.cap,1,500)) error(`${key}.cap`,`${label}容量需为 1–500 的整数`);
+      const d = seconds(s.duration,`${key}.duration`,`${label}完整耗时`,true);
+      const z = seconds(s.reset,`${key}.reset`,`${label}复位时间`);
+      const gapSec = seconds(s.gap,`${key}.gap`,`${label}离站间隔`);
+      if (s.kind === 'batch' && !['full','immediate'].includes(s.policy)) error(`${key}.policy`,`${label}请选择开批规则`);
+      stations.push({name,slot:s.slot ?? i+1,inputIndex:i,kind:s.kind,cap:Number(s.cap),duration:Number(s.duration),reset:Number(s.reset || 0),gap:Number(s.gap || 0),policy:s.policy,d,z,gapSec});
+    });
+    if (!stations.length) error('stations','请启用至少 1 个站点');
+    const n = Number(raw.n), maxGroups = Math.min(n || 1,stations.length || 1), hasGroups = raw.groups !== '' && raw.groups != null;
+    if (raw.mode === '分组轮转' && hasGroups && !integer(raw.groups,1,maxGroups)) error('groups',`轮转组数需为 1–${maxGroups} 的整数`);
+    const prep = seconds(raw.prep,'prep','开场准备'), close = seconds(raw.close,'close','收尾'), buffer = seconds(raw.buffer,'buffer','机动预留');
+    const breakInput = Array.isArray(raw.breaks) ? raw.breaks : [], breaks = [];
+    if (breakInput.length > 20) error('breaks','最多设置 20 段整体休息');
+    breakInput.forEach((b,i) => {
+      if (!b || b.enabled === false) return;
+      const key = `break.${i}`, label = `第 ${i+1} 段休息`, name = String(b.name ?? '').trim() || label;
+      if (!integer(b.afterStage,1,stations.length || 1)) error(`${key}.afterStage`,`${label}请选择有效的测试阶段`);
+      const duration = seconds(b.duration,`${key}.duration`,`${label}休息时长`,true);
+      breaks.push({afterStage:Number(b.afterStage),duration,name,inputIndex:i});
+    });
+    const arrivalMode=raw.arrivalMode??'all';
+    if(!['all','auto'].includes(arrivalMode))error('arrivalMode','请选择集中到场或自动分批到场');
+    const hasBatch=raw.arrivalBatchSize!==''&&raw.arrivalBatchSize!=null;
+    if(arrivalMode==='auto'&&hasBatch&&!integer(raw.arrivalBatchSize,1,500))error('arrivalBatchSize','每批到场人数需为 1–500 的整数，留空按起始站点的同时测试人数安排');
+    const arrivalLead=arrivalMode==='auto'?seconds(raw.arrivalLead,'arrivalLead','提前到场准备时间'):0;
+    const bound = (n*stations.reduce((a,s) => a+s.d+s.z+s.gapSec,0)+prep+close+buffer+arrivalLead+breaks.reduce((a,b) => a+b.duration,0))*1000;
+    if (Number.isFinite(bound) && bound > Number.MAX_SAFE_INTEGER) error('stations','总时长过大，超出精确计算范围');
+    return {errors,config:errors.length ? null : {n,mode:raw.mode,groups:raw.mode === '分组轮转' ? (hasGroups ? Number(raw.groups) : maxGroups) : 0,prep,close,buffer,startMs,stations,breaks,arrivalMode,arrivalBatchSize:hasBatch?Number(raw.arrivalBatchSize):0,arrivalLead}};
+  }
+  function calculate(raw,options={}) {
+    const checked = validate(raw);
+    if (checked.errors.length) return {...checked,result:null};
+    const c = checked.config, n = c.n;
+    const sites = c.stations.map(s => ({...s,d:Math.round(s.d*1000),z:Math.round(s.z*1000),gapSec:Math.round(s.gapSec*1000)}));
+    const available = sites.map(s => Array(s.kind === 'independent' ? s.cap : 1).fill(0));
+    const batches = sites.map(() => 0), previous = Array(n).fill(0), previousSite = Array(n).fill(-1), records = [], restSegments=[];
+    const initialReady=Array(n).fill(0),arrivalPlan=[];
+    // Arrival waves preserve the established start times, so duration-only
+    // trials can use the all-ready schedule without rebuilding queue statistics.
+    if(c.arrivalMode==='auto'&&!options.totalsOnly){
+      const seed=calculate({...raw,arrivalMode:'all'},{totalsOnly:true});
+      if(!seed.result)return seed;
+      const starts=new Map();
+      seed.result.records.filter(e=>e.visit===1).forEach(e=>{
+        const key=e.station+'-'+e.group;if(!starts.has(key))starts.set(key,[]);starts.get(key).push(e);
+      });
+      for(const rows of starts.values()){
+        rows.sort((a,b)=>a.person-b.person);
+        const size=c.arrivalBatchSize||c.stations[rows[0].station-1].cap;
+        for(let i=0;i<rows.length;i+=size){
+          const people=rows.slice(i,i+size),ready=Math.min(...people.map(e=>e.begin));
+          people.forEach(e=>initialReady[e.person-1]=Math.round(ready*1000));
+          arrivalPlan.push({station:people[0].station,group:people[0].group,people:people.map(e=>e.person),count:people.length,report:c.prep+ready-c.arrivalLead,ready:c.prep+ready,firstBegin:c.prep+ready,lastBegin:c.prep+Math.max(...people.map(e=>e.begin))});
+        }
+      }
+      arrivalPlan.sort((a,b)=>a.ready-b.ready||a.station-b.station||a.people[0]-b.people[0]);
+    }
+    function restOverlap(start,end) {return restSegments.reduce((a,b) => a+Math.max(0,Math.min(end,b.end)-Math.max(start,b.start)),0);}
+    function insertBreaks(stage,finish) {
+      const selected=c.breaks.filter(b => b.afterStage===stage);
+      if (!selected.length) return null;
+      let cursor=finish;
+      for (const b of selected) {const end=cursor+Math.round(b.duration*1000);restSegments.push({start:cursor,end,name:b.name,afterStage:stage,indices:[b.inputIndex]});cursor=end;}
+      return cursor;
+    }
+    function serve(j,people,arrivals,group,visit,gate=null,floor=0) {
+      const s = sites[j]; let last = 0;
+      function record(k,begin,unit) {
+        const person = people[k], end = begin+s.d, restWait = restOverlap(arrivals[k],begin);
+        records.push({person:person+1,group,visit,station:j+1,name:`${String(s.slot).padStart(2,'0')} ${s.name}`,ready:arrivals[k],begin,end,unit,wait:begin-arrivals[k]-restWait,breakWait:restWait,delay:begin-arrivals[k]});
+        previous[person]=end;previousSite[person]=j;last=Math.max(last,end);
+      }
+      if (s.kind === 'independent') {
+        for (let k=0;k<people.length;k++) {
+          let lane=0;
+          for (let l=1;l<available[j].length;l++) if (available[j][l]<available[j][lane]) lane=l;
+          const begin=Math.max(arrivals[k],gate ?? 0,available[j][lane],floor);
+          record(k,begin,lane+1);available[j][lane]=begin+s.d+s.z;
+        }
+      } else {
+        for (let k=0;k<people.length;) {
+          let endIndex=k+1, begin=Math.max(available[j][0],arrivals[k],gate ?? 0,floor);
+          if (gate !== null || s.policy === 'full') {
+            endIndex=Math.min(k+s.cap,people.length);
+            for (let p=k;p<endIndex;p++) begin=Math.max(begin,arrivals[p]);
+          } else {
+            while (endIndex<people.length && endIndex-k<s.cap && arrivals[endIndex]<=begin) endIndex++;
+          }
+          const batch=++batches[j];
+          for (let p=k;p<endIndex;p++) record(p,begin,batch);
+          available[j][0]=begin+s.d+s.z;k=endIndex;
+        }
+      }
+      return last;
+    }
+    const groups=[];
+    if (c.mode === '分组轮转') {
+      let cursor=0;
+      for (let g=0;g<c.groups;g++) groups.push(Array.from({length:Math.floor(n/c.groups)+(g<n%c.groups?1:0)},() => cursor++));
+      const groupReady=groups.map(() => 0);let pauseFloor=0;
+      for (let r=0;r<sites.length;r++) {
+        const gate=Math.max(...groupReady,pauseFloor);let roundFinish=0;
+        groups.forEach((people,g) => {
+          const j=(g+r)%sites.length;
+          const arrivals=people.map(p => previousSite[p]<0 ? initialReady[p] : previous[p]+sites[previousSite[p]].gapSec);
+          const finish=serve(j,people,arrivals,g+1,r+1,gate);roundFinish=Math.max(roundFinish,finish);groupReady[g]=finish+sites[j].gapSec;
+        });
+        pauseFloor=insertBreaks(r+1,roundFinish) ?? pauseFloor;
+      }
+    } else {
+      const people=Array.from({length:n},(_,i) => i);
+      let pauseFloor=0;
+      sites.forEach((s,j) => {
+        const barrier=Math.max(...previous);
+        const arrivals=previous.map((end,p) => j===0 ? initialReady[p] : end+sites[j-1].gapSec);
+        // Count personal waiting for a collective changeover while retaining
+        // the same collective release time and all established test times.
+        const release=c.mode==='全员逐站完成'&&j>0?barrier+sites[j-1].gapSec:0;
+        const finish=serve(j,people,arrivals,0,j+1,null,Math.max(pauseFloor,release));
+        pauseFloor=insertBreaks(j+1,finish) ?? pauseFloor;
+      });
+    }
+    records.sort((a,b) => a.person-b.person || a.visit-b.visit);
+    const testEnd=records.reduce((max,e) => Math.max(max,e.end),0);
+    const test=Math.max(testEnd,restSegments.at(-1)?.end || 0)/1000,actual=c.prep+test+c.close,reserved=actual+c.buffer;
+    if (c.startMs!==null && !Number.isFinite(new Date(c.startMs+reserved*1000).getTime())) return {config:null,result:null,errors:[{key:'start',message:'预计结束日期超出可表示范围，请缩短时长'}]};
+    records.forEach(e => {for (const key of ['ready','begin','end','wait','breakWait','delay']) e[key]/=1000;});
+    if(options.totalsOnly)return {errors:[],config:c,result:{test,actual,reserved,records}};
+    function waitingSegments(e){
+      const parts=[];let cursor=e.ready;
+      for(const b of restSegments){
+        const start=b.start/1000,end=b.end/1000;
+        if(end<=cursor||start>=e.begin)continue;
+        if(start>cursor)parts.push([cursor,Math.min(start,e.begin)]);
+        cursor=Math.max(cursor,Math.min(end,e.begin));
+      }
+      if(e.begin>cursor)parts.push([cursor,e.begin]);return parts;
+    }
+    function peak(segments){
+      const events=[];for(const [begin,end]of segments)if(end>begin){events.push([Math.round(begin*1000),1],[Math.round(end*1000),-1]);}
+      events.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);let now=0,max=0;
+      for(const e of events){now+=e[1];max=Math.max(max,now);}return max;
+    }
+    const waiting=records.map(waitingSegments);
+    const stationStats=sites.map((s,i) => {
+      const rows=records.filter(r => r.station===i+1);
+      const first=Math.min(...rows.map(r=>r.begin)),last=Math.max(...rows.map(r=>r.end)),workDuration=last-first;
+      const occupied=rows.reduce((a,r)=>a+r.end-r.begin,0),segments=rows.map(r=>[r.begin,r.end]);
+      return {station:i+1,name:s.name,slot:s.slot,first,last,workDuration,occupiedPersonSeconds:occupied,capacity:s.cap,kind:s.kind,utilization:workDuration>0?occupied/(s.cap*workDuration):0,peakTesting:peak(segments),peakQueue:peak(records.flatMap((r,k)=>r.station===i+1?waiting[k]:[])),meanWait:rows.reduce((a,r) => a+r.wait,0)/rows.length,maxWait:Math.max(...rows.map(r => r.wait)),count:rows.length};
+    });
+    const breakSeconds=restSegments.reduce((a,b) => a+b.end-b.start,0)/1000;
+    const effectiveBreaks=restSegments.map(b => ({start:c.prep+b.start/1000,end:c.prep+b.end/1000,name:b.name,afterStage:b.afterStage,indices:b.indices}));
+    if(c.arrivalMode==='all'){
+      const starts=new Map();records.filter(e=>e.visit===1).forEach(e=>{const key=e.station+'-'+e.group;if(!starts.has(key))starts.set(key,[]);starts.get(key).push(e);});
+      for(const rows of starts.values())arrivalPlan.push({station:rows[0].station,group:rows[0].group,people:rows.map(e=>e.person),count:rows.length,report:0,ready:c.prep,firstBegin:c.prep+Math.min(...rows.map(e=>e.begin)),lastBegin:c.prep+Math.max(...rows.map(e=>e.begin))});
+    }
+    arrivalPlan.forEach((b,i)=>b.batch=i+1);
+    if(c.startMs!==null&&arrivalPlan.some(b=>!Number.isFinite(new Date(c.startMs+b.report*1000).getTime())))return {config:null,result:null,errors:[{key:'arrivalLead',message:'建议到场日期超出可表示范围，请减少提前准备时间'}]};
+    return {errors:[],config:c,result:{test,testStart:c.prep,testEnd:c.prep+testEnd/1000,actual,reserved,breakSeconds,testBreakSeconds:breakSeconds,effectiveBreaks,records,stationStats,arrivalPlan,peakWaiting:peak(waiting.flat()),groups:groups.map(g => ({first:g[0]+1,last:g[g.length-1]+1,count:g.length})),meanWait:records.reduce((a,r) => a+r.wait,0)/n,meanBreakWait:records.reduce((a,r) => a+r.breakWait,0)/n}};
+  }
+  function capacityReference(raw,baseline=calculate(raw)) {
+    if (!baseline.result) return {errors:baseline.errors,candidates:[],best:null};
+    const candidates=[];
+    raw.stations.forEach((s,inputIndex) => {
+      if (!s || s.enabled===false || Number(s.cap)>=Math.min(500,baseline.config.n)) return;
+      const other=calculate({...raw,stations:raw.stations.map((site,i) => i===inputIndex ? {...site,cap:Number(site.cap)+1} : site)},{totalsOnly:true});
+      if (other.result) candidates.push({inputIndex,name:String(s.name),kind:s.kind,from:Number(s.cap),to:Number(s.cap)+1,before:baseline.result.actual,after:other.result.actual,saving:Math.round((baseline.result.actual-other.result.actual)*1000)/1000});
+    });
+    candidates.sort((a,b) => b.saving-a.saving || a.inputIndex-b.inputIndex);
+    return {errors:[],candidates,best:candidates.find(c => c.saving>0) ?? null};
+  }
+  function stationSnapshot(calculation,station,elapsedSeconds) {
+    const {config:c,result:r}=calculation;
+    if(!r||!Number.isInteger(station)||station<1||station>c.stations.length||!Number.isFinite(elapsedSeconds))return null;
+    const tick=Math.round(elapsedSeconds*1000),relative=tick-Math.round(r.testStart*1000),at=value=>Math.round(value*1000);
+    const rows=r.records.filter(e=>e.station===station),site=c.stations[station-1],stat=r.stationStats[station-1];
+    const pause=r.effectiveBreaks.find(b=>at(b.start)<=tick&&tick<at(b.end))||null;
+    const active=rows.filter(e=>at(e.begin)<=relative&&relative<at(e.end)).sort((a,b)=>a.unit-b.unit||a.person-b.person);
+    const waiting=pause?[]:rows.filter(e=>at(e.ready)<=relative&&relative<at(e.begin)).sort((a,b)=>a.begin-b.begin||a.person-b.person);
+    const upcoming=rows.filter(e=>at(e.begin)>relative).sort((a,b)=>a.begin-b.begin||a.person-b.person),nextTime=upcoming[0]?.begin;
+    const next=nextTime===undefined?[]:upcoming.filter(e=>at(e.begin)===at(nextTime));
+    const status=pause?'整体休息':active.length?'正在测试':relative<at(stat.first)?'尚未开测':relative>=at(stat.last)?'本站已完成':'复位或空闲';
+    return {station,time:tick/1000,relative:relative/1000,site,pause,status,active,waiting,next,nextTime:nextTime===undefined?null:r.testStart+nextTime};
+  }
+  const api={MODES,validate,calculate,capacityReference,stationSnapshot};root.TestFlow=api;
+  if (typeof module!=='undefined') module.exports=api;
+})(globalThis);
+
+</script>
+
+<script>
+globalThis.TestFlowWorkbookTemplate={"parts":{"xl/workbook.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:workbook xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:sheets><x:sheet name=\"排程总览\" sheetId=\"1\" r:id=\"R1e2047e6155145f4\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /><x:sheet name=\"人员排程\" sheetId=\"2\" r:id=\"Rb126db3931634c87\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /><x:sheet name=\"站点排程\" sheetId=\"3\" r:id=\"R1cbdb1b813ba4371\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /><x:sheet name=\"到场安排\" sheetId=\"4\" r:id=\"R3f6be08bf4204445\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /></x:sheets></x:workbook>","xl/styles.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:styleSheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:numFmts count=\"9\"><x:numFmt numFmtId=\"200\" formatCode=\"[h]:mm:ss\" /><x:numFmt numFmtId=\"201\" formatCode=\"[h]:mm:ss.000\" /><x:numFmt numFmtId=\"202\" formatCode=\"#,##0.###&quot; 秒&quot;\" /><x:numFmt numFmtId=\"203\" formatCode=\"0.0%\" /><x:numFmt numFmtId=\"204\" formatCode=\"000&quot; 号&quot;\" /><x:numFmt numFmtId=\"205\" formatCode=\"#,##0\" /><x:numFmt numFmtId=\"206\" formatCode=\"yyyy-mm-dd hh:mm:ss\" /><x:numFmt numFmtId=\"207\" formatCode=\"yyyy-mm-dd hh:mm:ss.000\" /><x:numFmt numFmtId=\"208\" formatCode=\"#,##0&quot; 人&quot;\" /></x:numFmts><x:fonts count=\"8\"><x:font><x:sz val=\"11\" /><x:name val=\"Carlito\" /></x:font><x:font><x:sz val=\"11\" /><x:color rgb=\"FF193A30\" /><x:name val=\"Arial\" /></x:font><x:font><x:b /><x:sz val=\"16\" /><x:color rgb=\"FF193A30\" /><x:name val=\"Arial\" /></x:font><x:font><x:sz val=\"10\" /><x:color rgb=\"FF647B70\" /><x:name val=\"Arial\" /></x:font><x:font><x:b /><x:sz val=\"11\" /><x:color rgb=\"FF193A30\" /><x:name val=\"Arial\" /></x:font><x:font><x:i /><x:sz val=\"10\" /><x:color rgb=\"FF647B70\" /><x:name val=\"Arial\" /></x:font><x:font><x:b /><x:sz val=\"11\" /><x:color rgb=\"FFFFFFFF\" /><x:name val=\"Arial\" /></x:font><x:font><x:b /><x:sz val=\"14\" /><x:color rgb=\"FF193A30\" /><x:name val=\"Arial\" /></x:font></x:fonts><x:fills count=\"6\"><x:fill><x:patternFill patternType=\"none\" /></x:fill><x:fill><x:patternFill patternType=\"gray125\" /></x:fill><x:fill><x:patternFill patternType=\"solid\"><x:fgColor rgb=\"FFFFFFFF\" /></x:patternFill></x:fill><x:fill><x:patternFill patternType=\"solid\"><x:fgColor rgb=\"FFEEF4F0\" /></x:patternFill></x:fill><x:fill><x:patternFill patternType=\"solid\"><x:fgColor rgb=\"FF176B50\" /></x:patternFill></x:fill><x:fill><x:patternFill patternType=\"solid\"><x:fgColor rgb=\"FFF7FAF8\" /></x:patternFill></x:fill></x:fills><x:borders count=\"8\"><x:border /><x:border><x:bottom style=\"thin\"><x:color rgb=\"FFDFE7E2\" /></x:bottom></x:border><x:border><x:right style=\"thin\"><x:color rgb=\"FFFFFFFF\" /></x:right></x:border><x:border><x:left style=\"thin\"><x:color rgb=\"FFFFFFFF\" /></x:left><x:right style=\"thin\"><x:color rgb=\"FFFFFFFF\" /></x:right></x:border><x:border><x:left style=\"thin\"><x:color rgb=\"FFFFFFFF\" /></x:left></x:border><x:border><x:bottom style=\"thin\"><x:color rgb=\"FFE9EFEB\" /></x:bottom></x:border><x:border><x:top style=\"thin\"><x:color rgb=\"FFE9EFEB\" /></x:top><x:bottom style=\"thin\"><x:color rgb=\"FFE9EFEB\" /></x:bottom></x:border><x:border><x:top style=\"thin\"><x:color rgb=\"FFE9EFEB\" /></x:top><x:bottom style=\"thin\"><x:color rgb=\"FFDFE7E2\" /></x:bottom></x:border></x:borders><x:cellStyleXfs count=\"1\"><x:xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" /></x:cellStyleXfs><x:cellXfs count=\"151\"><x:xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" /><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"2\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"3\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"3\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"4\" fillId=\"3\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"4\" fillId=\"3\" borderId=\"1\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"4\" fillId=\"3\" borderId=\"1\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"center\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"4\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"2\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"3\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"4\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"2\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"3\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"4\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"2\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"center\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"3\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"center\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"6\" fillId=\"4\" borderId=\"4\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"center\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"5\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"2\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"2\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"5\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"5\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"2\" borderId=\"6\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"2\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"5\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"5\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"5\" borderId=\"7\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"2\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"2\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"2\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"3\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"3\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"3\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"4\" fillId=\"3\" borderId=\"1\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"0\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"205\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"205\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"205\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"0\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"205\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"205\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"205\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"202\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"206\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"206\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"206\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"206\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"206\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"206\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"207\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"207\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"207\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"207\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"207\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"207\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"203\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"204\" fontId=\"1\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"5\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"left\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"7\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"200\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"200\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"0\" fontId=\"7\" fillId=\"5\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"0\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"200\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"200\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"200\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"201\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"201\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"201\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"208\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"208\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"208\" fontId=\"7\" fillId=\"2\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf><x:xf numFmtId=\"208\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" /><x:xf numFmtId=\"208\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" /></x:xf><x:xf numFmtId=\"208\" fontId=\"7\" fillId=\"5\" borderId=\"5\" xfId=\"0\" applyNumberFormat=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><x:alignment horizontal=\"right\" vertical=\"center\" /></x:xf></x:cellXfs><x:cellStyles count=\"1\"><x:cellStyle name=\"Normal\" xfId=\"0\" /></x:cellStyles></x:styleSheet>","xl/theme/theme1.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><a:theme name=\"ChatGPT\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:themeElements><a:clrScheme name=\"ChatGPT\"><a:dk1><a:sysClr val=\"windowText\" lastClr=\"000000\" /></a:dk1><a:lt1><a:sysClr val=\"window\" lastClr=\"FFFFFF\" /></a:lt1><a:dk2><a:srgbClr val=\"0E2841\" /></a:dk2><a:lt2><a:srgbClr val=\"E8E8E8\" /></a:lt2><a:accent1><a:srgbClr val=\"156082\" /></a:accent1><a:accent2><a:srgbClr val=\"E97132\" /></a:accent2><a:accent3><a:srgbClr val=\"196B24\" /></a:accent3><a:accent4><a:srgbClr val=\"0F9ED5\" /></a:accent4><a:accent5><a:srgbClr val=\"A02B93\" /></a:accent5><a:accent6><a:srgbClr val=\"4EA72E\" /></a:accent6><a:hlink><a:srgbClr val=\"467886\" /></a:hlink><a:folHlink><a:srgbClr val=\"96607D\" /></a:folHlink></a:clrScheme><a:fontScheme name=\"Office\"><a:majorFont><a:latin typeface=\"Calibri Light\" /><a:ea typeface=\"Calibri Light\" /><a:cs typeface=\"Calibri Light\" /></a:majorFont><a:minorFont><a:latin typeface=\"Calibri\" /><a:ea typeface=\"Calibri\" /><a:cs typeface=\"Calibri\" /></a:minorFont></a:fontScheme><a:fmtScheme name=\"ChatGPT\"><a:fillStyleLst><a:solidFill><a:schemeClr val=\"phClr\" /></a:solidFill><a:gradFill><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"67000\" /><a:lumMod val=\"110000\" /><a:satMod val=\"105000\" /></a:schemeClr></a:gs><a:gs pos=\"50000\"><a:schemeClr val=\"phClr\"><a:tint val=\"73000\" /><a:lumMod val=\"105000\" /><a:satMod val=\"103000\" /></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:tint val=\"81000\" /><a:lumMod val=\"105000\" /><a:satMod val=\"109000\" /></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"5400000\" scaled=\"0\" /></a:gradFill><a:gradFill><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"94000\" /><a:lumMod val=\"102000\" /><a:satMod val=\"103000\" /></a:schemeClr></a:gs><a:gs pos=\"50000\"><a:schemeClr val=\"phClr\"><a:shade val=\"100000\" /><a:lumMod val=\"100000\" /><a:satMod val=\"110000\" /></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"78000\" /><a:lumMod val=\"99000\" /><a:satMod val=\"120000\" /></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"5400000\" scaled=\"0\" /></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w=\"12700\"><a:solidFill><a:schemeClr val=\"phClr\" /></a:solidFill><a:prstDash val=\"solid\" /></a:ln><a:ln w=\"19050\"><a:solidFill><a:schemeClr val=\"phClr\" /></a:solidFill><a:prstDash val=\"solid\" /></a:ln><a:ln w=\"25400\"><a:solidFill><a:schemeClr val=\"phClr\" /></a:solidFill><a:prstDash val=\"solid\" /></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst /></a:effectStyle><a:effectStyle><a:effectLst /></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"57150\" dist=\"19050\" dir=\"5400000\"><a:srgbClr val=\"000000\"><a:alpha val=\"63000\" /></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val=\"phClr\" /></a:solidFill><a:solidFill><a:schemeClr val=\"phClr\"><a:tint val=\"95000\" /><a:satMod val=\"170000\" /></a:schemeClr></a:solidFill><a:gradFill><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"93000\" /><a:shade val=\"98000\" /><a:lumMod val=\"102000\" /><a:satMod val=\"150000\" /></a:schemeClr></a:gs><a:gs pos=\"50000\"><a:schemeClr val=\"phClr\"><a:tint val=\"98000\" /><a:shade val=\"90000\" /><a:lumMod val=\"103000\" /><a:satMod val=\"130000\" /></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"63000\" /><a:satMod val=\"120000\" /></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"5400000\" scaled=\"0\" /></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements></a:theme>","xl/sharedStrings.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:sst xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" />","xl/worksheets/sheet1.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:worksheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:sheetPr><x:tabColor rgb=\"FF176B50\" /></x:sheetPr><x:sheetViews><x:sheetView showGridLines=\"0\" workbookViewId=\"0\" /></x:sheetViews><x:sheetFormatPr defaultRowHeight=\"15\" /><x:cols><x:col min=\"1\" max=\"1\" width=\"28\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"2\" max=\"2\" width=\"18\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"3\" max=\"3\" width=\"17\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"4\" max=\"4\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"5\" max=\"5\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"6\" max=\"6\" width=\"18\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"7\" max=\"7\" width=\"15\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"8\" max=\"8\" width=\"21\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"9\" max=\"9\" width=\"21\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"10\" max=\"10\" width=\"20\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"11\" max=\"11\" width=\"24\" hidden=\"0\" customWidth=\"1\" /></x:cols><x:sheetData>{{ROWS}}</x:sheetData><x:pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\" /><x:tableParts count=\"1\"><x:tablePart r:id=\"R6784e8c4628c4c3c\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /></x:tableParts></x:worksheet>","xl/tables/table1.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:table id=\"1\" name=\"StationSummary\" displayName=\"StationSummary\" ref=\"A13:K18\" headerRowCount=\"1\" totalsRowCount=\"0\" totalsRowShown=\"0\" xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:autoFilter ref=\"A13:K18\" /><x:tableColumns count=\"11\"><x:tableColumn id=\"1\" name=\"测试站点\" /><x:tableColumn id=\"2\" name=\"可同时测试人数\" /><x:tableColumn id=\"3\" name=\"峰值测试人数\" /><x:tableColumn id=\"4\" name=\"首次开测时间\" /><x:tableColumn id=\"5\" name=\"最后结束时间\" /><x:tableColumn id=\"6\" name=\"工作时长\" /><x:tableColumn id=\"7\" name=\"工位使用率\" /><x:tableColumn id=\"8\" name=\"人均本站等待时间\" /><x:tableColumn id=\"9\" name=\"最长本站等待时间\" /><x:tableColumn id=\"10\" name=\"本站峰值等待人数\" /><x:tableColumn id=\"11\" name=\"实际占用工位总时长\" /></x:tableColumns><x:tableStyleInfo name=\"TableStyleLight1\" showFirstColumn=\"0\" showLastColumn=\"0\" showRowStripes=\"1\" showColumnStripes=\"0\" /></x:table>","xl/worksheets/sheet2.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:worksheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:sheetPr><x:tabColor rgb=\"FF176B50\" /></x:sheetPr><x:sheetViews><x:sheetView showGridLines=\"0\" workbookViewId=\"0\"><x:pane xSplit=\"1\" ySplit=\"5\" topLeftCell=\"B6\" activePane=\"bottomRight\" state=\"frozen\" /></x:sheetView></x:sheetViews><x:sheetFormatPr defaultRowHeight=\"15\" /><x:cols><x:col min=\"1\" max=\"1\" width=\"15\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"2\" max=\"2\" width=\"12\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"3\" max=\"3\" width=\"13\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"4\" max=\"4\" width=\"13\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"5\" max=\"5\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"6\" max=\"6\" width=\"16\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"7\" max=\"7\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"8\" max=\"8\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"9\" max=\"9\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"10\" max=\"10\" width=\"18\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"11\" max=\"11\" width=\"18\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"12\" max=\"12\" width=\"22\" hidden=\"0\" customWidth=\"1\" /></x:cols><x:sheetData>{{ROWS}}</x:sheetData><x:pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\" /><x:tableParts count=\"1\"><x:tablePart r:id=\"Raffd65f9c9ca47eb\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /></x:tableParts></x:worksheet>","xl/tables/table2.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:table id=\"2\" name=\"PeopleSchedule\" displayName=\"PeopleSchedule\" ref=\"A5:L7\" headerRowCount=\"1\" totalsRowCount=\"0\" totalsRowShown=\"0\" xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:autoFilter ref=\"A5:L7\" /><x:tableColumns count=\"12\"><x:tableColumn id=\"1\" name=\"人员编号\" /><x:tableColumn id=\"2\" name=\"小组\" /><x:tableColumn id=\"3\" name=\"测试次序\" /><x:tableColumn id=\"4\" name=\"站点编号\" /><x:tableColumn id=\"5\" name=\"测试站点\" /><x:tableColumn id=\"6\" name=\"工位或批次\" /><x:tableColumn id=\"7\" name=\"最早可开测时间\" /><x:tableColumn id=\"8\" name=\"实际开测时间\" /><x:tableColumn id=\"9\" name=\"测试结束时间\" /><x:tableColumn id=\"10\" name=\"测试时长\" /><x:tableColumn id=\"11\" name=\"本站等待时间\" /><x:tableColumn id=\"12\" name=\"期间整体休息时间\" /></x:tableColumns><x:tableStyleInfo name=\"TableStyleLight1\" showFirstColumn=\"0\" showLastColumn=\"0\" showRowStripes=\"1\" showColumnStripes=\"0\" /></x:table>","xl/worksheets/sheet3.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:worksheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:sheetPr><x:tabColor rgb=\"FF176B50\" /></x:sheetPr><x:sheetViews><x:sheetView showGridLines=\"0\" workbookViewId=\"0\"><x:pane xSplit=\"2\" ySplit=\"5\" topLeftCell=\"C6\" activePane=\"bottomRight\" state=\"frozen\" /></x:sheetView></x:sheetViews><x:sheetFormatPr defaultRowHeight=\"15\" /><x:cols><x:col min=\"1\" max=\"1\" width=\"13\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"2\" max=\"2\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"3\" max=\"3\" width=\"16\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"4\" max=\"4\" width=\"15\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"5\" max=\"5\" width=\"12\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"6\" max=\"6\" width=\"13\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"7\" max=\"7\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"8\" max=\"8\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"9\" max=\"9\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"10\" max=\"10\" width=\"18\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"11\" max=\"11\" width=\"18\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"12\" max=\"12\" width=\"22\" hidden=\"0\" customWidth=\"1\" /></x:cols><x:sheetData>{{ROWS}}</x:sheetData><x:pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\" /><x:tableParts count=\"1\"><x:tablePart r:id=\"R142c117d5df145ba\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /></x:tableParts></x:worksheet>","xl/tables/table3.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:table id=\"3\" name=\"StationSchedule\" displayName=\"StationSchedule\" ref=\"A5:L7\" headerRowCount=\"1\" totalsRowCount=\"0\" totalsRowShown=\"0\" xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:autoFilter ref=\"A5:L7\" /><x:tableColumns count=\"12\"><x:tableColumn id=\"1\" name=\"站点编号\" /><x:tableColumn id=\"2\" name=\"测试站点\" /><x:tableColumn id=\"3\" name=\"工位或批次\" /><x:tableColumn id=\"4\" name=\"人员编号\" /><x:tableColumn id=\"5\" name=\"小组\" /><x:tableColumn id=\"6\" name=\"测试次序\" /><x:tableColumn id=\"7\" name=\"最早可开测时间\" /><x:tableColumn id=\"8\" name=\"实际开测时间\" /><x:tableColumn id=\"9\" name=\"测试结束时间\" /><x:tableColumn id=\"10\" name=\"测试时长\" /><x:tableColumn id=\"11\" name=\"本站等待时间\" /><x:tableColumn id=\"12\" name=\"期间整体休息时间\" /></x:tableColumns><x:tableStyleInfo name=\"TableStyleLight1\" showFirstColumn=\"0\" showLastColumn=\"0\" showRowStripes=\"1\" showColumnStripes=\"0\" /></x:table>","xl/worksheets/sheet4.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:worksheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:sheetPr><x:tabColor rgb=\"FF176B50\" /></x:sheetPr><x:sheetViews><x:sheetView showGridLines=\"0\" workbookViewId=\"0\"><x:pane ySplit=\"5\" topLeftCell=\"A6\" activePane=\"bottomLeft\" state=\"frozen\" /></x:sheetView></x:sheetViews><x:sheetFormatPr defaultRowHeight=\"15\" /><x:cols><x:col min=\"1\" max=\"1\" width=\"14\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"2\" max=\"2\" width=\"31\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"3\" max=\"3\" width=\"14\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"4\" max=\"4\" width=\"13\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"5\" max=\"5\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"6\" max=\"6\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"7\" max=\"7\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"8\" max=\"8\" width=\"30\" hidden=\"0\" customWidth=\"1\" /><x:col min=\"9\" max=\"9\" width=\"30\" hidden=\"0\" customWidth=\"1\" /></x:cols><x:sheetData>{{ROWS}}</x:sheetData><x:pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\" /><x:tableParts count=\"1\"><x:tablePart r:id=\"Rab8fb79d848b4e7c\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" /></x:tableParts></x:worksheet>","xl/tables/table4.xml":"<?xml version=\"1.0\" encoding=\"utf-8\"?><x:table id=\"4\" name=\"ArrivalSchedule\" displayName=\"ArrivalSchedule\" ref=\"A5:I7\" headerRowCount=\"1\" totalsRowCount=\"0\" totalsRowShown=\"0\" xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><x:autoFilter ref=\"A5:I7\" /><x:tableColumns count=\"9\"><x:tableColumn id=\"1\" name=\"到场批次\" /><x:tableColumn id=\"2\" name=\"人员编号范围\" /><x:tableColumn id=\"3\" name=\"到场人数\" /><x:tableColumn id=\"4\" name=\"所属小组\" /><x:tableColumn id=\"5\" name=\"起始站点\" /><x:tableColumn id=\"6\" name=\"建议到场时间\" /><x:tableColumn id=\"7\" name=\"首站就位时间\" /><x:tableColumn id=\"8\" name=\"本批首次开测时间\" /><x:tableColumn id=\"9\" name=\"本批最后开测时间\" /></x:tableColumns><x:tableStyleInfo name=\"TableStyleLight1\" showFirstColumn=\"0\" showLastColumn=\"0\" showRowStripes=\"1\" showColumnStripes=\"0\" /></x:table>","_rels/.rels":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"/xl/workbook.xml\" Id=\"Re7d62b9d2c8f4cc5\" /></Relationships>","xl/_rels/workbook.xml.rels":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"/xl/styles.xml\" Id=\"Red1ad024ad054d40\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"/xl/theme/theme1.xml\" Id=\"R18807e6a15ed49ae\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"/xl/sharedStrings.xml\" Id=\"Rbe51c5a9b0094523\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet1.xml\" Id=\"R1e2047e6155145f4\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet2.xml\" Id=\"Rb126db3931634c87\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet3.xml\" Id=\"R1cbdb1b813ba4371\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet4.xml\" Id=\"R3f6be08bf4204445\" /></Relationships>","xl/worksheets/_rels/sheet1.xml.rels":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table\" Target=\"/xl/tables/table1.xml\" Id=\"R6784e8c4628c4c3c\" /></Relationships>","xl/worksheets/_rels/sheet2.xml.rels":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table\" Target=\"/xl/tables/table2.xml\" Id=\"Raffd65f9c9ca47eb\" /></Relationships>","xl/worksheets/_rels/sheet3.xml.rels":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table\" Target=\"/xl/tables/table3.xml\" Id=\"R142c117d5df145ba\" /></Relationships>","xl/worksheets/_rels/sheet4.xml.rels":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table\" Target=\"/xl/tables/table4.xml\" Id=\"Rab8fb79d848b4e7c\" /></Relationships>","[Content_Types].xml":"﻿<?xml version=\"1.0\" encoding=\"utf-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\" /><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\" /><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\" /><Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\" /><Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\" /><Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/tables/table1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\" /><Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/tables/table2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\" /><Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/tables/table3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\" /><Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/tables/table4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml\" /></Types>"},"styles":{"title":[52,55],"context":[56,58],"heading":[21,21],"section":[59,59],"label":[61,63],"text":[30,66],"number":[72,78],"duration":[81,84],"durationMs":[87,90],"elapsed":[93,96],"clock":[99,102],"clockMs":[105,108],"percent":[111,114],"person":[117,120],"note":[124,128],"metricDuration":[133,138],"metricDurationMs":[141,144],"metricNumber":[147,150]}};
+
+</script>
+
+<script>
+(function(root){
+  'use strict';
+  // Populate the styled workbook template locally; no network or workbook library is needed at runtime.
+  const xml=value=>String(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+  const round=value=>Math.round(value*1000)/1000;
+  const col=i=>String.fromCharCode(65+i);
+  function peopleRange(people){
+    const sorted=[...new Set(people)].sort((a,b)=>a-b),parts=[];
+    for(let i=0;i<sorted.length;i++){const first=sorted[i];let last=first;while(sorted[i+1]===last+1)last=sorted[++i];parts.push(first===last?String(first).padStart(3,'0'):String(first).padStart(3,'0')+'–'+String(last).padStart(3,'0'));}
+    return parts.join('、')+' 号';
+  }
+  const crcTable=Array.from({length:256},(_,i)=>{let value=i;for(let j=0;j<8;j++)value=value&1?0xEDB88320^(value>>>1):value>>>1;return value>>>0;});
+  function crc32(bytes){let value=0xFFFFFFFF;for(const b of bytes)value=crcTable[(value^b)&255]^(value>>>8);return (value^0xFFFFFFFF)>>>0;}
+  async function zip(parts){
+    const enc=new TextEncoder(),locals=[],central=[];let offset=0,centralSize=0;
+    for(const [path,content]of Object.entries(parts)){
+      const name=enc.encode(path),raw=enc.encode(content),crc=crc32(raw);let data=raw,method=0;
+      if(root.CompressionStream)try{const compressed=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer());if(compressed.length<raw.length){data=compressed;method=8;}}catch{/* Older browsers can still export a valid uncompressed workbook. */}
+      const header=new Uint8Array(30+name.length),h=new DataView(header.buffer);
+      h.setUint32(0,0x04034B50,true);h.setUint16(4,20,true);h.setUint16(6,0x800,true);h.setUint16(8,method,true);h.setUint16(12,0x21,true);h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,raw.length,true);h.setUint16(26,name.length,true);header.set(name,30);
+      const entry=new Uint8Array(46+name.length),e=new DataView(entry.buffer);e.setUint32(0,0x02014B50,true);e.setUint16(4,20,true);e.setUint16(6,20,true);e.setUint16(8,0x800,true);e.setUint16(10,method,true);e.setUint16(14,0x21,true);e.setUint32(16,crc,true);e.setUint32(20,data.length,true);e.setUint32(24,raw.length,true);e.setUint16(28,name.length,true);e.setUint32(42,offset,true);entry.set(name,46);
+      locals.push(header,data);central.push(entry);offset+=header.length+data.length;centralSize+=entry.length;
+    }
+    const end=new Uint8Array(22),e=new DataView(end.buffer);e.setUint32(0,0x06054B50,true);e.setUint16(8,central.length,true);e.setUint16(10,central.length,true);e.setUint32(12,centralSize,true);e.setUint32(16,offset,true);
+    const bytes=new Uint8Array(offset+centralSize+end.length);let position=0;for(const part of [...locals,...central,end]){bytes.set(part,position);position+=part.length;}return bytes;
+  }
+  async function build(calculation){
+    const {config:c,result:r}=calculation;if(!r)throw new Error('请先修正方案参数');
+    const template=root.TestFlowWorkbookTemplate,parts={...template.parts},styles=template.styles;
+    const earliest=c.startMs===null?null:new Date(c.startMs+Math.round(Math.min(0,...r.arrivalPlan.map(b=>b.report))*1000)),latest=c.startMs===null?null:new Date(c.startMs+Math.round(r.actual*1000));
+    const absolute=c.startMs!==null&&earliest.getFullYear()>=1900&&latest.getFullYear()<=9999;
+    const timeValue=seconds=>{
+      if(!absolute)return round(seconds);
+      const date=new Date(c.startMs+Math.round(seconds*1000));
+      const serial=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),date.getHours(),date.getMinutes(),date.getSeconds(),date.getMilliseconds())/86400000+25569;
+      return serial<61?serial-1:serial;
+    };
+    const fractional=value=>Math.abs(value-Math.round(value))>.000001;
+    const durationStyle=(seconds,metric=false)=>(metric?'metricDuration':'duration')+(fractional(round(seconds))?'Ms':'');
+    const timeStyle=seconds=>absolute?(fractional(seconds)?'clockMs':'clock'):'elapsed';
+    const data=(value,style='text',formula=null)=>({value,style,formula});
+    const seconds=value=>data(round(value)/86400,durationStyle(value));
+    const time=value=>data(timeValue(value),timeStyle(value));
+    const number=value=>data(value,'number');
+    const person=value=>data(value,'person');
+    const bodyStyle=(style,parity)=>styles[style][parity];
+    function cell(address,item,parity){
+      if(item===null||item===undefined)return '';
+      if(typeof item!=='object')item=data(item);
+      const style=bodyStyle(item.style,parity),value=item.value;
+      if(item.formula)return `<x:c r="${address}" s="${style}"><x:f>${xml(item.formula)}</x:f><x:v>${value}</x:v></x:c>`;
+      if(typeof value==='number'){if(!Number.isFinite(value))throw new Error('排程中出现无效数值');return `<x:c r="${address}" s="${style}"><x:v>${value}</x:v></x:c>`;}
+      return `<x:c r="${address}" s="${style}" t="inlineStr"><x:is><x:t xml:space="preserve">${xml(value??'')}</x:t></x:is></x:c>`;
+    }
+    function row(index,values,{height=26,parity=0}={}){return `<x:row r="${index}" ht="${height}" customHeight="1">${values.map((item,i)=>cell(col(i)+index,item,parity)).join('')}</x:row>`;}
+    const charWidth=text=>[...String(text)].reduce((sum,char)=>sum+(/[\u0000-\u00FF]/.test(char)?1:2),0);
+    const fittedHeight=(text,width=28)=>Math.max(26,Math.ceil(charWidth(text)/width)*15+8);
+    const table=(start,headers,rows,nameColumn=0)=>row(start,headers.map(value=>data(value,'heading')),{height:42})+rows.map((values,i)=>row(start+i+1,values,{parity:i%2,height:fittedHeight(values[nameColumn]?.value??values[nameColumn])})).join('');
+    const context=`${c.n} 人完成 ${c.stations.length} 个站点，${c.mode}${c.groups?'，共 '+c.groups+' 组':''}，${c.arrivalMode==='auto'?'自动分批到场':'全体集中到场'}`;
+    const timeNote=absolute?'时刻按当前设备本地日期和钟点显示。':(c.startMs===null?'':'日期超出 Excel 日期范围。')+'时刻为距全场开场的累计秒数，负数表示开场前。';
+    const opening=(title,note)=>row(1,[],{height:10})+row(2,[data(title,'title')],{height:31})+row(3,[data(note,'context')],{height:24})+row(4,[],{height:9});
+    function updateSheet(index,rows,lastCol,lastRow,tableStart,tableEnd){
+      const path=`xl/worksheets/sheet${index}.xml`,last=col(lastCol-1),range=`A${tableStart}:${last}${tableEnd}`;
+      let source=parts[path].replace('{{ROWS}}',rows);
+      source=source.replace(/<x:pageMargins\b[^>]*\/>/g,'');
+      source=source.replace('<x:sheetViews>',`<x:dimension ref="A1:${last}${lastRow}"/><x:sheetViews>`);
+      source=source.replace('</x:sheetPr>','<x:pageSetUpPr fitToPage="1"/></x:sheetPr>');
+      source=source.replace('<x:tableParts',`<x:printOptions horizontalCentered="1"/><x:pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><x:pageSetup paperSize="8" orientation="landscape" fitToWidth="1" fitToHeight="0"/><x:tableParts`);
+      parts[path]=source;
+      const tablePath=`xl/tables/table${index}.xml`;parts[tablePath]=parts[tablePath].replace(/ref="[^"]+"/g,`ref="${range}"`);
+    }
+    let overview=opening('测试排程',context);
+    overview+=row(5,[data('关键指标','section'),data('数值','section'),null,data('现场安排','section'),data('时长','section')]);
+    const labels=['现场总时长','建议预留时间','人均累计等待时间','预计峰值等待人数'],values=[r.actual,r.reserved,r.meanWait,r.peakWaiting],phaseLabels=['开场准备','测试时段（含休息）','收尾','机动预留'],phaseValues=[c.prep,r.test,c.close,c.buffer];
+    for(let i=0;i<4;i++)overview+=row(6+i,[data(labels[i],'label'),data(i===3?values[i]:round(values[i])/86400,i===3?'metricNumber':durationStyle(values[i],true)),null,data(phaseLabels[i],'label'),seconds(phaseValues[i])],{height:29});
+    overview+=row(11,[data(timeNote,'note')]);
+    const statHeaders=['测试站点','可同时测试人数','峰值测试人数','首次开测时间','最后结束时间','工作时长','工位使用率','人均本站等待时间','最长本站等待时间','本站峰值等待人数','实际占用工位总时长'];
+    const stats=r.stationStats.map((s,i)=>{const rr=14+i;return [data(String(s.slot).padStart(2,'0')+' '+s.name),number(s.capacity),number(s.peakTesting),time(r.testStart+s.first),time(r.testStart+s.last),data(round(s.workDuration)/86400,durationStyle(s.workDuration),`(E${rr}-D${rr})${absolute?'':'/86400'}`),data(s.utilization,'percent',`K${rr}/(B${rr}*F${rr})`),seconds(s.meanWait),seconds(s.maxWait),number(s.peakQueue),seconds(s.occupiedPersonSeconds)];});
+    overview+=table(13,statHeaders,stats);
+    let rr=15+stats.length;
+    overview+=row(rr++,[data('工位使用率 = 实际占用工位总时长 ÷（同时测试人数 × 工作时长）。整批测试按人数位置计算占用率。','note')]);
+    overview+=row(rr++,[data('等待包含排队、凑批与统一换站等待，扣除整体休息，不包含转场、恢复及提前到场准备。','note')]);
+    rr++;
+    if(r.effectiveBreaks.length){
+      overview+=row(rr++,[data('整体休息安排','section')]);
+      const start=rr,breakRows=r.effectiveBreaks.map((b,i)=>[data(b.name),number(b.afterStage),seconds(b.end-b.start),time(b.start),time(b.end)]);
+      overview+=table(start,['休息名称',c.mode==='分组轮转'?'第几轮全部完成后':'第几个启用站点全部完成后','休息时长','统一休息开始','统一休息结束'],breakRows);
+      rr+=breakRows.length+2;
+    }
+    overview+=row(rr++,[data('站点设置','section')]);
+    const stationSettings=c.stations.map(s=>[data(String(s.slot).padStart(2,'0')+' '+s.name),data(s.kind==='batch'?'整批测试':'独立工位'),number(s.cap),seconds(s.d),seconds(s.z),seconds(s.gapSec),data(s.kind==='batch'?(s.policy==='immediate'?'有人即开':'凑满再开'):'—')]);
+    overview+=table(rr,['测试站点','测试方式','人数上限','完整测试耗时','复位时间','离站间隔','开批规则'],stationSettings);
+    rr+=stationSettings.length+2;
+    overview+=row(rr++,[data(`到场方式：${c.arrivalMode==='auto'?'自动分批到场':'全体集中到场'}。${c.arrivalMode==='auto'?'每批人数 '+(c.arrivalBatchSize||'按起始站点人数上限')+'，提前准备 '+round(c.arrivalLead)+' 秒。':''}`,'note')]);
+    updateSheet(1,overview,11,rr-1,13,13+stats.length);
+    const headers=['人员编号','小组','测试次序','站点编号','测试站点','工位或批次','最早可开测时间','实际开测时间','测试结束时间','测试时长','本站等待时间','期间整体休息时间'];
+    function recordRows(records,stationOrder=false){return records.map((e,i)=>{
+      const rowIndex=6+i,s=c.stations[e.station-1],values=[person(e.person),e.group?number(e.group):data('—'),number(e.visit),number(s.slot),data(e.name),data((s.kind==='batch'?'批次 ':'工位 ')+e.unit),time(r.testStart+e.ready),time(r.testStart+e.begin),time(r.testStart+e.end),data(round(e.end-e.begin)/86400,durationStyle(e.end-e.begin),`(I${rowIndex}-H${rowIndex})${absolute?'':'/86400'}`),seconds(e.wait),seconds(e.breakWait)];
+      return stationOrder?[values[3],values[4],values[5],values[0],values[1],values[2],...values.slice(6)]:values;
+    });}
+    const peopleRecords=[...r.records].sort((a,b)=>a.person-b.person||a.visit-b.visit),stationRecords=[...r.records].sort((a,b)=>a.station-b.station||a.begin-b.begin||a.unit-b.unit||a.person-b.person);
+    updateSheet(2,opening('人员排程','按人员编号和测试次序排序。'+timeNote)+table(5,headers,recordRows(peopleRecords),4),12,5+r.records.length,5,5+r.records.length);
+    updateSheet(3,opening('站点排程','按站点、开测时间和工位排序。'+timeNote)+table(5,['站点编号','测试站点','工位或批次','人员编号','小组','测试次序',...headers.slice(6)],recordRows(stationRecords,true),1),12,5+r.records.length,5,5+r.records.length);
+    const arrivalRows=[...r.arrivalPlan].sort((a,b)=>a.report-b.report||a.batch-b.batch).map(b=>[number(b.batch),data(peopleRange(b.people)),number(b.count),b.group?number(b.group):data('—'),data(c.stations[b.station-1].name),time(b.report),time(b.ready),time(b.firstBegin),time(b.lastBegin)]);
+    updateSheet(4,opening('到场安排',`${c.arrivalMode==='auto'?'自动分批到场，提前准备 '+round(c.arrivalLead)+' 秒。':'全体集中到场。'}${timeNote}`)+table(5,['到场批次','人员编号范围','到场人数','所属小组','起始站点','建议到场时间','首站就位时间','本批首次开测时间','本批最后开测时间'],arrivalRows,4),9,5+arrivalRows.length,5,5+arrivalRows.length);
+    const printNames=['排程总览','人员排程','站点排程','到场安排'];
+    let definitions='';for(let i=1;i<4;i++)definitions+=`<x:definedName name="_xlnm.Print_Titles" localSheetId="${i}">'${printNames[i]}'!$1:$5</x:definedName>`;
+    parts['xl/workbook.xml']=parts['xl/workbook.xml'].replace('</x:workbook>',`<x:definedNames>${definitions}</x:definedNames></x:workbook>`);
+    return zip(parts);
+  }
+  const api={build};root.TestFlowExport=api;if(typeof module!=='undefined')module.exports=api;
+})(globalThis);
+
+</script>
+
+<script>
+(function () {
+  'use strict';
+  const $=(s,root=document) => root.querySelector(s), $$=(s,root=document) => [...root.querySelectorAll(s)];
+  const esc=value => String(value).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const round=n => Math.round(n*1000)/1000, num=n => String(round(n));
+  const colors=['#287c62','#588bba','#9976ab','#b58a3d','#4c9393','#b47183','#789047','#7477ab','#aa815b','#408e7c','#657fac','#a26d94','#a19047','#619099','#ad756e','#84925f','#8b80ad','#9f886a','#639279','#858798'];
+  const STORAGE='testflow-plan-v2',UI_STORAGE='testflow-interface-v5';
+  const DEFAULT_METRICS=['actual','reserved','meanWait','peakWaiting'];
+  const METRIC_LABELS={actual:'现场总时长',reserved:'建议预留时间',meanWait:'人均累计等待时间',peakWaiting:'预计峰值等待人数',people:'测试人数',stations:'启用站点数量',finish:'预计结束时间',maxWait:'最长单站等待时间',arrivals:'到场批次数',maxWork:'最长站点工作时长'};
+  let metricCards=[...DEFAULT_METRICS],dismissedAdviceFor='',adviceSignature='';
+  function saveInterface(){try{localStorage.setItem(UI_STORAGE,JSON.stringify({metricCards,dismissedAdviceFor}));}catch{}}
+  try{const saved=JSON.parse(localStorage.getItem(UI_STORAGE)||'{}');if(Array.isArray(saved.metricCards)&&saved.metricCards.length===4&&saved.metricCards.every(key=>typeof key==='string'&&Object.hasOwn(METRIC_LABELS,key)))metricCards=saved.metricCards;dismissedAdviceFor=typeof saved.dismissedAdviceFor==='string'?saved.dismissedAdviceFor:'';}catch{}
+
+  const blankStation=(name='新站点') => ({name,enabled:true,kind:'independent',cap:1,duration:30,reset:0,gap:0,policy:'full'});
+  const initialPlan=() => ({version:4,arrivalMode:'auto',arrivalBatchSize:'',arrivalLead:300,timeUnit:'sec',format:'sec',n:24,mode:'个人流水线',groups:'',start:'',prep:300,close:120,buffer:300,breaks:[],stations:[
+    {...blankStation('身高体重'),cap:2,duration:30,reset:5},
+    {...blankStation('30 米冲刺'),duration:45,reset:10,gap:120},
+    {...blankStation('垂直纵跳'),cap:2,duration:60,reset:10,gap:60},
+    {...blankStation('握力测试'),cap:2,duration:40,reset:5,gap:30},
+    {...blankStation('有氧测试'),kind:'batch',cap:6,duration:300,reset:30}
+  ]});
+  let state=initialPlan(), checked, capacity, pane='results', view='stations';
+  let personStart=1, personSize=20, detailPage=0, detailSize=50, filterStation='', filterPerson='', zoom=1;
+  let timer,toastTimer,resizeFrame,hoverFrame,undoSnapshot=null,tooltipDismissed=false,hoverPoint=null;
+  let sidebarOpen=innerWidth>=1100,wasMobile=innerWidth<1100,arrivalPage=0,arrivalSize=25;
+  const expandedStations=new Set([0]);
+  const drafts=new Map(),timeErrors=new Map(),capacityTargets=new Map(),paneScroll={settings:0,results:0};
+  const canonical=key => key.replace(/^global\./,'');
+  function duration(sec) {
+    const ms=Math.round(sec*1000),h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=(ms%60000)/1000;
+    return [h ? `${h} 时` : '',m ? `${m} 分` : '',s ? `${num(s)} 秒` : ''].filter(Boolean).join(' ') || '0 秒';
+  }
+  function metric(sec) {
+    const ms=Math.round(sec*1000),h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=(ms%60000)/1000;
+    const value=h||m||s||0,unit=h?'时':m?'分':'秒';
+    const rest=h ? [m?`${m} 分`:'',s?`${num(s)} 秒`:''].filter(Boolean).join(' ') : m&&s?`${num(s)} 秒`:'';
+    return `${value.toLocaleString('zh-CN',{maximumFractionDigits:3})}<span class="u">${unit}</span>${rest?`<span class="rest">${rest}</span>`:''}`;
+  }
+  function elapsed(sec) {
+    const negative=sec<0,ms=Math.round(Math.abs(sec)*1000),h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),f=ms%1000;
+    return `${negative?'-':''}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}${f?'.'+String(f).padStart(3,'0').replace(/0+$/,''):''}`;
+  }
+  function clock(sec,full=false) {
+    if (checked.config.startMs===null) return elapsed(sec);
+    const d=new Date(checked.config.startMs+Math.round(sec*1000)),base=new Date(checked.config.startMs);
+    const date=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const f=d.getMilliseconds(),time=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}${f?'.'+String(f).padStart(3,'0').replace(/0+$/,''):''}`;
+    return full||d.toDateString()!==base.toDateString() ? `${date} ${time}` : time;
+  }
+  const offset=() => checked.result.testStart;
+  const color=i => colors[checked.config.stations[i].inputIndex%colors.length];
+  function errorSlot(key) {return `<small class="field-error" id="error-${key.replace(/\./g,'-')}" data-error-for="${key}"></small>`;}
+  function timeField(key,value,label,disabled=false,suffix='',forceMixed=false) {
+    const draft=drafts.get(canonical(key)),mixed=forceMixed||state.format==='mixed',ticks=Math.round(Number(value||0)*1000);
+    const field=(part,val,name,max='') => `<input type="number" data-time="${key}" data-part="${part}" aria-label="${esc(label+name)}" value="${esc(val)}" min="0" ${max} step="${part==='minutes'?'1':'.001'}" inputmode="decimal" ${disabled?'disabled':''}>`;
+    const content=mixed ? field('minutes',draft?.minutes??Math.floor(ticks/60000),'分钟')+'<span>分</span>'+field('seconds',draft?.seconds??ticks%60000/1000,'秒','max="59.999"')+`<span>秒${suffix}</span>` : field('value',draft?.value??value,'秒')+`<span>秒${suffix}</span>`;
+    return `<div class="time-input${mixed?' mixed':''}">${content}</div>`;
+  }
+  function renderStations() {
+    $('#station-list').innerHTML=state.stations.map((s,i)=>{
+      const off=s.enabled===false,batch=s.kind==='batch',label=`第 ${i+1} 站`,disabled=off?'disabled':'';
+      return `<details class="station-editor ${off?'row-disabled':''}" data-row="${i}" ${expandedStations.has(i)?'open':''}>
+        <summary><input type="checkbox" data-station="${i}" data-field="enabled" aria-label="启用${label}" ${off?'':'checked'}><span class="station-number">${label}</span><span class="station-summary-name"><strong data-station-title="${i}" title="${esc(s.name)}">${esc(s.name||'未命名站点')}</strong><small data-station-meta="${i}">${off?'本站已停用':`${duration(Number(s.duration)||0)} / ${batch?'批':'人'} · ${batch?'每批最多':'同时测试'} ${s.cap} 人`}</small></span></summary>
+        <div class="station-body"><label class="field"><span>测试站点名称</span><input type="text" class="station-name" data-station="${i}" data-field="name" aria-label="${label}名称" maxlength="100" value="${esc(s.name)}" ${disabled}>${errorSlot(`station.${i}.name`)}</label>
+        <div class="station-fields">
+          <label class="field"><span>测试方式</span><select data-station="${i}" data-field="kind" aria-label="${label}测试方式" ${disabled}><option value="independent" ${batch?'':'selected'}>独立工位</option><option value="batch" ${batch?'selected':''}>整批测试</option></select>${errorSlot(`station.${i}.kind`)}</label>
+          <label class="field"><span>${batch?'每批人数上限':'可同时测试人数'}</span><div class="number-with-unit"><input type="number" data-station="${i}" data-field="cap" aria-label="${label}${batch?'每批人数上限':'可同时测试人数'}" min="1" max="500" step="1" value="${esc(s.cap)}" ${disabled}><span>人</span></div>${errorSlot(`station.${i}.cap`)}</label>
+          <label class="field"><span>完整耗时 / ${batch?'批':'人'}</span>${timeField(`station.${i}.duration`,s.duration,`${label}完整耗时`,off)}${errorSlot(`station.${i}.duration`)}</label>
+          <label class="field"><span>复位时间</span>${timeField(`station.${i}.reset`,s.reset,`${label}复位时间`,off)}${errorSlot(`station.${i}.reset`)}</label>
+          <label class="field"><span>离站间隔</span>${timeField(`station.${i}.gap`,s.gap,`${label}离站间隔`,off)}${errorSlot(`station.${i}.gap`)}</label>
+          ${batch?`<label class="field"><span>开批规则</span><select data-station="${i}" data-field="policy" aria-label="${label}开批规则" ${disabled}><option value="full" ${s.policy==='full'?'selected':''}>凑满再开</option><option value="immediate" ${s.policy==='immediate'?'selected':''}>有人即开</option></select>${errorSlot(`station.${i}.policy`)}</label>`:''}
+        </div><div class="station-footer"><span>按站点顺序安排测试</span><div class="row-actions"><button class="row-action" data-station-action="up" data-index="${i}" aria-label="上移${label}" title="上移站点" ${i===0?'disabled':''}>↑</button><button class="row-action" data-station-action="down" data-index="${i}" aria-label="下移${label}" title="下移站点" ${i===state.stations.length-1?'disabled':''}>↓</button><button class="row-action remove" data-station-action="remove" data-index="${i}" aria-label="删除${label}" title="删除站点">×</button></div></div></div></details>`;
+    }).join('');
+    $('#station-count').textContent=`${state.stations.filter(s=>s.enabled!==false).length} 个站点启用，共 ${state.stations.length} 个站点`;
+    $('#add-station').disabled=state.stations.length>=20;markErrors();
+  }
+  function refreshStationSummaries(){
+    state.stations.forEach((s,i)=>{
+      const name=$(`[data-station-title="${i}"]`),meta=$(`[data-station-meta="${i}"]`);
+      if(name){name.textContent=s.name||'未命名站点';name.title=s.name;}
+      if(meta)meta.textContent=s.enabled===false?'本站已停用':`${duration(Number(s.duration)||0)} / ${s.kind==='batch'?'批':'人'} · ${s.kind==='batch'?'每批最多':'同时测试'} ${s.cap} 人`;
+    });
+  }
+
+  function renderBreaks() {
+    const sites=state.stations.filter(s=>s.enabled!==false);
+    $('#break-list').innerHTML=state.breaks.map((b,i) => {
+      const off=b.enabled===false,disabled=off?'disabled':'',label=`第 ${i+1} 段休息`;
+      const stageOptions=sites.map((s,j)=>`<option value="${j+1}" ${Number(b.afterStage)===j+1?'selected':''}>${state.mode==='分组轮转'?`第 ${j+1} 轮全部完成后`:`第 ${state.stations.indexOf(s)+1} 站（${esc(s.name)}）全部完成后`}${j===sites.length-1?' · 收尾前':''}</option>`).join('');
+      const invalid=Number(b.afterStage)>sites.length||Number(b.afterStage)<1;
+      return `<div class="break-row ${off?'disabled':''}" data-break-row="${i}">
+        <label class="break-enable"><input type="checkbox" data-break="${i}" data-field="enabled" aria-label="启用${label}" ${off?'':'checked'}></label>
+        <label class="break-name"><span>休息名称</span><input type="text" data-break="${i}" data-field="name" value="${esc(b.name)}" maxlength="60" aria-label="${label}名称" ${disabled}></label>
+        <label class="break-stage"><span>插入位置</span><select data-break="${i}" data-field="afterStage" aria-label="${label}插入阶段" ${disabled}>${invalid?`<option value="${esc(b.afterStage)}" selected>请选择有效的测试阶段</option>`:''}${stageOptions}</select>${errorSlot(`break.${i}.afterStage`)}</label>
+        <label class="break-duration"><span>休息时长</span>${timeField(`break.${i}.duration`,b.duration,`${label}休息时长`,off,'',true)}${errorSlot(`break.${i}.duration`)}</label>
+        <button class="row-action remove" data-break-remove="${i}" aria-label="删除${label}" title="删除休息">×</button>
+      </div>`;
+    }).join('');
+    $('#break-count').textContent=state.breaks.length ? `${state.breaks.filter(b=>b.enabled!==false).length} 段休息启用` : '按测试阶段插入休息';
+    $('#add-break').disabled=state.breaks.length>=20||!sites.length;
+    $('#breaks-note').textContent=state.mode==='分组轮转'?'全体完成所选轮次后统一休息，再进入下一轮。同一轮后的多段休息依次累加。':'全体完成所选站点及之前的测试后统一休息，再继续后续站点。同一位置的多段休息依次累加。';
+    markErrors();
+  }
+  function breakAnchors() {
+    if(state.mode==='分组轮转')return null;
+    const active=state.stations.filter(s=>s.enabled!==false);
+    return state.breaks.map(b=>active[Number(b.afterStage)-1]||null);
+  }
+  function restoreBreakAnchors(anchors) {
+    if(!anchors)return;
+    const active=state.stations.filter(s=>s.enabled!==false);
+    state.breaks.forEach((b,i)=>{if(anchors[i])b.afterStage=active.indexOf(anchors[i])+1;});
+  }
+  function refreshBreakLabels() {
+    const sites=state.stations.filter(s=>s.enabled!==false);
+    $$('[data-break][data-field="afterStage"] option').forEach(option=>{
+      const j=Number(option.value)-1,s=sites[j];if(!s)return;
+      option.textContent=(state.mode==='分组轮转'?`第 ${j+1} 轮全部完成后`:`第 ${state.stations.indexOf(s)+1} 站（${s.name}）全部完成后`)+(j===sites.length-1?' · 收尾前':'');
+    });
+  }
+  function syncControls() {
+    $$('[data-global]').forEach(input=>input.value=state[input.dataset.global]??'');
+    $$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===state.mode)));
+    $$('[data-format]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.format===state.format)));
+    $('#group-controls').hidden=state.mode!=='分组轮转';
+    for (const [key,label] of [['prep','开场准备'],['close','收尾'],['buffer','机动预留'],['arrivalLead','提前到场准备时间']]) $(key==='arrivalLead'?'#arrival-lead-time':`#${key}-time`).innerHTML=timeField(`global.${key}`,state[key],label,false,'',key==='arrivalLead');
+  }
+  function timeInput(input) {
+    const key=canonical(input.dataset.time),wrap=input.closest('.time-input');
+    const draft=Object.fromEntries($$('input',wrap).map(el=>[el.dataset.part,el.value]));drafts.set(key,draft);
+    const parts=key.split('.'),field=parts.at(-1),required=field==='duration';
+    let value,error='';
+    if (wrap.classList.contains('mixed')) {
+      const m=draft.minutes===''?0:Number(draft.minutes),s=draft.seconds===''?0:Number(draft.seconds);
+      if (!Number.isInteger(m)||m<0) error='分钟部分需为不小于 0 的整数';
+      else if (!Number.isFinite(s)||s<0||s>=60) error='秒部分需在 0 至 59.999 之间';
+      value=m*60+s;
+    } else {value=draft.value===''?0:Number(draft.value);if (!Number.isFinite(value)||value<0) error='请填写不小于 0 的有效秒数';}
+    if ($$('input',wrap).some(el=>el.validity.badInput)) error='请填写有效数字';
+    if (!error&&required&&value<=0) error='时长需大于 0 秒';
+    if (!error&&Math.abs(value*1000-Math.round(value*1000))>.00001) error='小数秒最多保留 3 位';
+    if (!error&&!Number.isSafeInteger(Math.round(value*1000))) error='时长超出精确计算范围';
+    if (error) timeErrors.set(key,{key,message:timeLabel(key)+'：'+error});
+    else {
+      timeErrors.delete(key);
+      if (parts[0]==='station') state.stations[Number(parts[1])][field]=round(value);
+      else if (parts[0]==='break') state.breaks[Number(parts[1])][field]=round(value);
+      else state[field]=round(value);
+    }
+  }
+  function timeLabel(key) {
+    const p=key.split('.'),labels={duration:'完整时长',reset:'复位时间',gap:'离站间隔',after:'距开场时长',prep:'开场准备',close:'收尾',buffer:'机动预留',arrivalLead:'提前到场准备时间'};
+    return (p[0]==='station'?`第 ${Number(p[1])+1} 站`:p[0]==='break'?`第 ${Number(p[1])+1} 段休息`:'')+(labels[p.at(-1)]||p.at(-1));
+  }
+  function targetForError(key) {
+    const p=key.split('.');
+    if (p[0]==='station') return $(`[data-station="${p[1]}"][data-field="${p[2]}"]`)||$(`[data-time="${key}"]`);
+    if (p[0]==='break') return $(`[data-break="${p[1]}"][data-field="${p[2]}"]`)||$(`[data-time="${key}"]`);
+    return $(`[data-global="${key}"]`)||$(`[data-time="global.${key}"]`)||(key==='breaks'?$('#add-break'):$('#add-station'));
+  }
+  function markErrors() {
+    $$('[aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
+    $$('[aria-describedby]').forEach(el=>el.removeAttribute('aria-describedby'));
+    $$('.field-error').forEach(el=>el.textContent='');
+    $$('.row-error').forEach(el=>el.classList.remove('row-error'));
+    for (const error of checked?.errors||[]) {
+      const target=targetForError(error.key),slot=$(`[data-error-for="${error.key}"]`);
+      if (slot) slot.textContent=error.message;
+      if (target) {
+        const controls=target.matches('input,select')?[target]:$$('input,select',target);
+        controls.forEach(el=>{el.setAttribute('aria-invalid','true');if(slot?.id)el.setAttribute('aria-describedby',slot.id);});
+        target.closest('[data-row],[data-break-row]')?.classList.add('row-error');
+      }
+    }
+  }
+  function recalculate() {
+    clearTimeout(timer);hideTooltip();
+    const calculation=TestFlow.calculate(state);
+    const extra=[...timeErrors.values()].filter(e=>{
+      if(e.key==='arrivalLead'&&state.arrivalMode!=='auto')return false;
+      const p=e.key.split('.');return p[0]==='station'?state.stations[Number(p[1])]?.enabled!==false:p[0]==='break'?state.breaks[Number(p[1])]?.enabled!==false:true;
+    });
+    checked=extra.length?{...calculation,result:null,errors:[...extra,...calculation.errors.filter(e=>!extra.some(x=>x.key===e.key))]}:calculation;
+    $('#group-controls').hidden=state.mode!=='分组轮转';
+    $('#valid-results').hidden=!checked.result;$('#results-empty').hidden=!!checked.result;
+    $('#validation-banner').hidden=!!checked.result;
+    if(checked.result){adviceSignature=JSON.stringify(checked.config);if(dismissedAdviceFor&&dismissedAdviceFor!==adviceSignature){dismissedAdviceFor='';saveInterface();}}
+    $('#capacity-card').hidden=!checked.result||dismissedAdviceFor===adviceSignature;
+    $('#arrival-auto-controls').hidden=state.arrivalMode!=='auto';
+    $('#arrival-setting-summary').textContent=state.arrivalMode==='auto'?'自动分批到场':'全体集中到场';
+    $('#arrival-mode-note').textContent=state.arrivalMode==='auto'?'按首站预计开测时间安排每批就位。提前准备时间从就位时刻向前计算，用于签到、热身和现场说明。':'所有人在开场准备后同时就位，首站等待包含集中到场产生的排队。';
+    for (const id of ['export-csv','save-plan']) $('#'+id).disabled=!checked.result;
+    $('#global-time-summary').textContent=`开场 ${duration(Number(state.prep)||0)} · 收尾 ${duration(Number(state.close)||0)} · 机动 ${duration(Number(state.buffer)||0)}`;
+    const g=checked.config?.groups;
+    $('#mode-note').textContent=state.mode==='个人流水线'?'个人按顺序前进，完成本站并满足离站间隔后进入下一站。':state.mode==='全员逐站完成'?'所有人完成本站后统一进入下一站。':`${g?`${g} 组，每组 ${Math.floor(Number(state.n)/g)}${Number(state.n)%g?'–'+Math.ceil(Number(state.n)/g):''} 人。`:''}各组从不同站点开始，每轮完成后统一换站。`;
+    const modeIds={'个人流水线':'pipeline','全员逐站完成':'sequential','分组轮转':'rotation'};
+    if (checked.result) {
+      $('#validation-banner').innerHTML='';
+      for (const mode of TestFlow.MODES) {
+        const other=mode===state.mode?checked:TestFlow.calculate({...state,mode},{totalsOnly:true});
+        $('#cost-'+modeIds[mode]).textContent=other.result?duration(other.result.actual):'组数待修正';
+      }
+      capacity=TestFlow.capacityReference(state,checked);renderSummary();renderResultOverview();
+      if (pane==='results') renderSchedule();
+      try {localStorage.setItem(STORAGE,JSON.stringify(state));$('#storage-status').textContent='已自动保存';}
+      catch {$('#storage-status').textContent='可保存方案备份';}
+    } else {
+      capacity=null;
+      $('#validation-banner').innerHTML=`${checked.errors.length} 处参数待修正。${checked.errors.slice(0,4).map(e=>`<button data-error="${esc(e.key)}">${esc(e.message)}</button>`).join('　')}${checked.errors.length>4?'　其余提示见对应字段。':''}`;
+      for (const id of Object.values(modeIds)) $('#cost-'+id).textContent='—';
+      renderSummary();$('#storage-status').textContent='待修正后保存';
+    }
+    markErrors();refreshBreakLabels();refreshStationSummaries();updateBarHeight();
+  }
+  function renderSummary() {
+    const r=checked?.result,c=checked?.config;
+    const descriptors={
+      actual:{value:r?metric(r.actual):'—',meta:r?'包括开场准备、测试、休息与收尾':'修正参数后自动更新'},
+      reserved:{value:r?metric(r.reserved):'—',meta:r?`另含 ${duration(c.buffer)} 机动预留`:'现场总时长加机动预留'},
+      meanWait:{value:r?metric(Math.round(r.meanWait)):'—',meta:'每人各站等待相加后取平均，包含统一换站等待',help:'waiting'},
+      peakWaiting:{value:r?`${r.peakWaiting}<span class="u">人</span>`:'—',meta:'全场同一时刻等待测试的人数最大值',help:'queue'},
+      people:{value:r?`${c.n}<span class="u">人</span>`:'—',meta:'本方案安排完成全部启用站点的人数'},
+      stations:{value:r?`${c.stations.length}<span class="u">个</span>`:'—',meta:'已启用并纳入排程的测试站点'},
+      finish:{value:r&&c.startMs!==null?esc(clock(r.actual).split(' ').at(-1)):'—',meta:r&&c.startMs!==null?'结束日期 '+esc(clock(r.actual,true).split(' ')[0]):'填写开场日期与时间后显示预计结束钟点'},
+      maxWait:{value:r?metric(Math.max(...r.stationStats.map(x=>x.maxWait))):'—',meta:'所有人员、所有站点中最长的一次等待',help:'maxWait'},
+      arrivals:{value:r?`${r.arrivalPlan.length}<span class="u">批</span>`:'—',meta:'按人员编号及起始站点分别安排的到场批次',help:'arrivals'},
+      maxWork:{value:r?metric(Math.max(...r.stationStats.map(x=>x.workDuration))):'—',meta:'各站首次开测至最后测完之间的最长跨度',help:'work'}
+    };
+    if(r&&c.startMs!==null){descriptors.actual.meta+=`<br>预计结束 ${clock(r.actual,true)}`;descriptors.reserved.meta+=`<br>建议预留至 ${clock(r.reserved,true)}`;}
+    $('#summary-bar').innerHTML=metricCards.map((key,i)=>{const item=descriptors[key];return `<article class="metric-card" data-metric-card="${i}"><div class="metric-label"><select class="metric-selector" data-metric-slot="${i}" aria-label="第 ${i+1} 张卡片展示指标" title="选择展示指标">${Object.entries(METRIC_LABELS).map(([value,label])=>`<option value="${value}" ${value===key?'selected':''}>${label}</option>`).join('')}</select></div><div class="metric-value">${item.value}</div><p class="metric-meta">${item.meta}${item.help?` <button class="hint-button" data-help="${item.help}" aria-label="查看${METRIC_LABELS[key]}说明">?</button>`:''}</p></article>`;}).join('');
+  }
+
+  function renderResultOverview() {
+    const c=checked.config;
+    $('#result-context').textContent=`${c.n} 人完成 ${c.stations.length} 个站点 · ${state.mode==='分组轮转'?'分组同步轮转':state.mode}${c.groups?' · 共 '+c.groups+' 组':''} · ${c.arrivalMode==='auto'?'自动分批到场':'全体集中到场'}`;
+    const best=capacity.best;
+    $('#capacity-hint').innerHTML=best?`<span>将“<strong>${esc(best.name)}</strong>”的${best.kind==='batch'?'每批人数上限':'可同时测试人数'}由 <strong>${best.from} 人</strong>增加至 <strong>${best.to} 人</strong>，在其他参数不变时，预计可缩短现场总时长 <strong>${duration(best.saving)}</strong>。</span><button class="text-button" data-go-view="capacity">查看容量试算</button>`:`<span>${capacity.candidates.length?'各站单独将可同时测试人数或每批人数上限增加 1 人，预计均不能缩短当前现场总时长。可通过容量试算比较其他人数上限。':'当前各站的人数上限已覆盖本次测试人数；可在容量试算中比较其他配置。'}</span><button class="text-button" data-go-view="capacity">查看容量试算</button>`;
+  }
+
+  function setView(next) {
+    view=next;
+    $$('[data-view]').forEach(b=>{const active=b.dataset.view===view;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1;});
+    hideTooltip();if(pane==='results')renderSchedule();
+  }
+  function switchPane(next) {
+    if(next==='settings')setSidebar(true,true);
+    else if(innerWidth<1100)setSidebar(false);
+  }
+  function setSidebar(open,focus=false){
+    sidebarOpen=open;const mobile=innerWidth<1100;
+    $('#settings-pane').hidden=!open;$('#workspace-layout').classList.toggle('settings-hidden',!open);
+    $('#sidebar-toggle').setAttribute('aria-expanded',String(open));$('#sidebar-toggle').setAttribute('aria-label',open?'关闭方案设置侧栏':'打开方案设置侧栏');
+    $('#sidebar-backdrop').hidden=!(open&&mobile);document.body.classList.toggle('drawer-open',open&&mobile);
+    $('#main-column').inert=open&&mobile;$('#app-bar').inert=open&&mobile;
+    $('#settings-pane').setAttribute('role',mobile?'dialog':'region');
+    if(open&&mobile)$('#settings-pane').setAttribute('aria-modal','true');else $('#settings-pane').removeAttribute('aria-modal');
+    if(open&&mobile&&focus)$('#sidebar-close').focus();else if(!open&&focus)$('#sidebar-toggle').focus();
+    if(!mobile)try{localStorage.setItem('testflow-sidebar-open',String(open));}catch{}
+    hideTooltip();cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{updateBarHeight();renderSchedule();});
+  }
+
+  function renderSchedule() {
+    if(!checked?.result||pane!=='results')return;
+    const panel=$('#schedule-view'),oldScroll=$('.timeline-scroll',panel)?.scrollLeft||0;
+    panel.setAttribute('aria-labelledby','tab-'+view);
+    if(view==='details')renderDetails(panel);else if(view==='capacity')renderCapacity(panel);else if(view==='arrivals')renderArrivals(panel);else renderTimeline(panel);
+    $('#station-operations').hidden=view!=='stations';if(view==='stations')renderStationOperations();
+    const scroller=$('.timeline-scroll',panel);
+    if(scroller){scroller.scrollLeft=oldScroll;syncAxis(scroller);scroller.addEventListener('scroll',()=>{syncAxis(scroller);hideTooltip();},{passive:true});}
+    updateTableHeads();updateBarHeight();
+  }
+  function syncAxis(scroller){const axis=$('.time-axis');if(axis)axis.style.transform=`translateX(${-scroller.scrollLeft}px)`;}
+  function options(values,current,suffix=''){return values.map(v=>`<option value="${v}" ${v===current?'selected':''}>${v}${suffix}</option>`).join('');}
+  function renderTimeline(panel) {
+    const c=checked.config,r=checked.result,people=view==='people';
+    personStart=Math.max(1,Math.min(Number(personStart)||1,c.n));
+    const last=Math.min(personStart+personSize-1,c.n),list=people?Array.from({length:last-personStart+1},(_,i)=>personStart+i):c.stations.map((s,i)=>i);
+    const tools=`<label>缩放<select id="chart-zoom" aria-label="时间轴缩放"><option value="1" ${zoom===1?'selected':''}>适配宽度</option><option value="2" ${zoom===2?'selected':''}>2 倍</option><option value="4" ${zoom===4?'selected':''}>4 倍</option><option value="8" ${zoom===8?'selected':''}>8 倍</option></select></label>`;
+    panel.innerHTML=`<div class="schedule-toolbar"><div class="schedule-controls">${people?`<label>起始人员<input id="person-start" type="number" min="1" max="${c.n}" value="${personStart}" step="1" aria-label="时间轴起始人员"></label><label>显示<select id="person-size" aria-label="人员时间轴显示人数">${options([10,20,50],personSize,' 人')}</select></label>`:`<span class="schedule-caption">${c.stations.length} 站 · ${c.startMs===null?'累计时长':'实际钟点'}</span>`}${tools}</div>${people?`<div class="pagination"><span>${personStart}–${last} / ${c.n}</span><button class="button quiet" data-page="people" data-delta="-1" aria-label="上一页人员" ${personStart===1?'disabled':''}>上一页</button><button class="button quiet" data-page="people" data-delta="1" aria-label="下一页人员" ${last===c.n?'disabled':''}>下一页</button></div>`:''}</div><div class="timeline-axes"><div class="axis-key">${people?'人员与所属小组':'测试站点'}</div><div class="time-axis-window"></div></div><div class="timeline-shell"><div class="timeline-names"></div><div class="timeline-scroll" tabindex="0" aria-label="可横向滚动的${people?'人员':'站点'}时间轴"></div></div>`;
+    const plot=$('.timeline-scroll',panel),width=Math.max(1,plot.clientWidth)*zoom,rowHeight=48,height=list.length*rowHeight,total=Math.max(r.actual,.001),inset=7,range=width-14;
+    const x=sec=>inset+sec/total*range,w=sec=>Math.max(.75,sec/total*range);
+    const targetStep=total/Math.max(2,Math.min(80,Math.floor(width/110)));
+    const steps=[.001,.002,.005,.01,.02,.05,.1,.2,.5,1,2,5,10,15,30,60,120,300,600,900,1800,3600,7200,18000,36000,86400];
+    const step=steps.find(s=>s>=targetStep)||Math.ceil(targetStep/86400)*86400,values=[0],axis=[];
+    for(let sec=step;sec<total;sec+=step)values.push(round(sec));
+    if(values.length>1&&x(total)-x(values.at(-1))<95)values.pop();
+    values.push(total);
+    let svg=`<svg class="timeline" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${people?'人员测试与等候':'各站实际测试时段'}；浅橙色为整体休息"><defs><pattern id="wait-pattern" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(40)"><rect width="6" height="6" fill="#eef1ed"/><line x1="0" y1="0" x2="0" y2="6" stroke="#bdc8c0" stroke-width="2"/></pattern></defs>`;
+    for(const sec of values){
+      const pos=x(sec),minuteTick=step>=60&&Math.abs(sec/60-Math.round(sec/60))<.000001;
+      let label=c.startMs===null?elapsed(sec):clock(sec);
+      if(minuteTick)label=label.replace(/:00$/,'');
+      label=label.replace(/^\d{4}\//,'');
+      axis.push(`<text x="${pos}" y="25" text-anchor="${sec===total?'end':sec===0?'start':'middle'}">${esc(label)}</text>`);
+      svg+=`<line x1="${pos}" y1="0" x2="${pos}" y2="${height}" stroke="#e3ebe4" stroke-dasharray="3 5"/>`;
+    }
+    r.effectiveBreaks.forEach((b,i)=>{
+      const bx=x(b.start),bw=w(b.end-b.start);
+      svg+=`<rect class="task break-band" data-pause="${i}" tabindex="0" x="${bx}" y="0" width="${bw}" height="${height}" fill="#f1dab0" fill-opacity=".65" aria-label="${esc(b.name+' '+clock(b.start)+' 至 '+clock(b.end))}"/>`;
+      axis.unshift(`<rect x="${bx}" y="0" width="${bw}" height="38" fill="#fbefd9"/>`);
+    });
+    const names=[];
+    list.forEach((item,i)=>{
+      const y=i*rowHeight;
+      svg+=`<line x1="0" y1="${y+47}" x2="${width}" y2="${y+47}" stroke="#e9eeea"/>`;
+      if(people){
+        const records=r.records.filter(e=>e.person===item);
+        names.push(`<div class="timeline-name"><strong>${String(item).padStart(3,'0')} 号</strong><small>${c.groups?'第 '+records[0].group+' 组':'按站点顺序'}</small></div>`);
+        records.forEach(e=>{
+          const id=(e.person-1)*c.stations.length+e.visit-1,begin=offset()+e.begin,ready=offset()+e.ready,bw=w(e.end-e.begin);
+          let cursor=ready;
+          for(const b of r.effectiveBreaks){
+            if(b.end<=cursor||b.start>=begin)continue;
+            const end=Math.min(begin,b.start);
+            if(end>cursor)svg+=`<rect x="${x(cursor)}" y="${y+12}" width="${w(end-cursor)}" height="24" rx="2" fill="url(#wait-pattern)"/>`;
+            cursor=Math.max(cursor,Math.min(begin,b.end));
+          }
+          if(begin>cursor)svg+=`<rect x="${x(cursor)}" y="${y+12}" width="${w(begin-cursor)}" height="24" rx="2" fill="url(#wait-pattern)"/>`;
+          svg+=`<rect class="task" data-record="${id}" tabindex="0" x="${x(begin)}" y="${y+10}" width="${bw}" height="28" rx="3" fill="${color(e.station-1)}" aria-label="${esc(`${item} 号 ${c.stations[e.station-1].name}，${clock(begin)} 至 ${clock(offset()+e.end)}，等候 ${duration(e.wait)}`)}"/>`;
+          if(bw>40)svg+=`<text class="bar-label" x="${x(begin)+bw/2}" y="${y+29}" text-anchor="middle">${String(c.stations[e.station-1].slot).padStart(2,'0')}</text>`;
+        });
+      }else{
+        const s=c.stations[item],stat=r.stationStats[item],label=`${String(s.slot).padStart(2,'0')} ${s.name}`;
+        names.push(`<div class="timeline-name"><strong title="${esc(label)}">${esc(label)}</strong><small title="人均本站等待时间：${duration(stat.meanWait)}">平均等待 ${duration(Math.round(stat.meanWait))}</small></div>`);
+        const events=r.records.filter(e=>e.station===item+1).sort((a,b)=>a.begin-b.begin||a.end-b.end),spans=[];
+        for(const e of events){const tail=spans.at(-1);if(tail&&e.begin<=tail.end)tail.end=Math.max(tail.end,e.end);else spans.push({begin:e.begin,end:e.end});}
+        for(const span of spans)svg+=`<rect class="task" data-span="${item}" data-begin="${span.begin}" data-end="${span.end}" tabindex="0" x="${x(offset()+span.begin)}" y="${y+10}" width="${w(span.end-span.begin)}" height="28" rx="3" fill="${color(item)}" aria-label="${esc(s.name+' '+clock(offset()+span.begin)+' 至 '+clock(offset()+span.end))}"/>`;
+      }
+    });
+    svg+=`<line class="timeline-cursor" id="timeline-cursor" x1="0" x2="0" y1="0" y2="${height}" stroke="#294c40" stroke-width="1" stroke-dasharray="3 3" visibility="hidden" pointer-events="none"/></svg>`;
+    $('.time-axis-window',panel).innerHTML=`<svg class="time-axis" width="${width}" height="38" viewBox="0 0 ${width} 38" aria-label="时间刻度">${axis.join('')}</svg>`;
+    $('.timeline-names',panel).innerHTML=names.join('');plot.innerHTML=svg;
+    panel.insertAdjacentHTML('beforeend',`<div class="legend">${people?c.stations.map((s,i)=>`<span><i style="background:${color(i)}"></i>${String(s.slot).padStart(2,'0')} ${esc(s.name)}</span>`).join('')+'<span><i class="wait-mark"></i>等候</span>':''}${r.effectiveBreaks.length?'<span><i class="break-mark"></i>整体休息</span>':''}</div>${r.effectiveBreaks.length?`<p class="break-legend">${r.effectiveBreaks.map(b=>`${esc(b.name)}　${clock(b.start)}–${clock(b.end)}`).join('　 · 　')}</p>`:''}<p class="schedule-help">${people?'彩色为测试，斜纹为等候，空白可包含转场与同步等待。聚焦或点击色块查看人员详情。':'移动鼠标查看该时刻正在测试的人员、工位和等待人数，点击任意时刻展开完整名单。色块表示正在测试，空白含复位与空闲。'}放大后可横向滚动。</p>`);
+  }
+  function pagination(total,size){const pages=Math.ceil(total/size);return `<div class="pagination"><span>${total?`${detailPage*size+1}–${Math.min((detailPage+1)*size,total)} / ${total}`:'0 条'}</span><button class="button quiet" data-page="details" data-delta="-1" aria-label="上一页明细" ${detailPage===0?'disabled':''}>上一页</button><button class="button quiet" data-page="details" data-delta="1" aria-label="下一页明细" ${detailPage>=pages-1?'disabled':''}>下一页</button></div>`;}
+  function renderDetails(panel){
+    const c=checked.config,r=checked.result;
+    if(Number(filterStation)>c.stations.length)filterStation='';
+    const rows=r.records.filter(e=>(!filterStation||e.station===Number(filterStation))&&(!filterPerson||e.person===Number(filterPerson)));
+    detailPage=Math.max(0,Math.min(detailPage,Math.ceil(rows.length/detailSize)-1));
+    panel.innerHTML=`<div class="schedule-toolbar"><div class="schedule-controls"><label>站点<select id="filter-station" aria-label="筛选站点"><option value="">全部站点</option>${c.stations.map((s,i)=>`<option value="${i+1}" ${Number(filterStation)===i+1?'selected':''}>${String(s.slot).padStart(2,'0')} ${esc(s.name)}</option>`).join('')}</select></label><label>人员<input id="filter-person" type="number" min="1" max="${c.n}" step="1" placeholder="全部" value="${esc(filterPerson)}" aria-label="筛选人员"></label><label>每页<select id="detail-size" aria-label="明细每页条数">${options([20,50,100],detailSize,' 条')}</select></label></div>${pagination(rows.length,detailSize)}</div><div class="table-scroll"><table class="result-table"><thead><tr><th>人员</th><th>小组 / 次序</th><th>站点</th><th>使用工位 / 测试批次</th><th>个人最早可开测时间</th><th>实际开测时间</th><th>测试结束时间</th><th>本站等待时间</th><th>期间整体休息时间</th></tr></thead><tbody>${rows.slice(detailPage*detailSize,(detailPage+1)*detailSize).map(e=>`<tr><td>${String(e.person).padStart(3,'0')} 号</td><td>${e.group?'第 '+e.group+' 组':'—'}<small>第 ${e.visit} 项</small></td><td><i class="station-dot" style="background:${color(e.station-1)}"></i>${esc(e.name)}</td><td>${c.stations[e.station-1].kind==='batch'?'批次':'工位'} ${e.unit}</td><td>${clock(offset()+e.ready)}</td><td>${clock(offset()+e.begin)}</td><td>${clock(offset()+e.end)}</td><td>${duration(e.wait)}</td><td>${duration(e.breakWait)}</td></tr>`).join('')||'<tr><td colspan="9" class="empty-view">没有符合条件的排程。</td></tr>'}</tbody></table></div><p class="schedule-help">${r.records.length.toLocaleString('zh-CN')} 条完整排程，导出包含全部人员。个人最早可开测时间按完成上一站及满足最低离站间隔计算，统一换站或站点繁忙可能推迟实际开测。等待包含排队、凑批及统一换站等待，扣除整体休息重叠；${c.startMs===null?'钟点为距全场开场的累计时长。':'钟点按当前设备本地时间显示。'}</p>`;
+  }
+  function renderCapacity(panel){
+    const c=checked.config;
+    panel.innerHTML=`<p class="capacity-note">每行只调整本站的可同时测试人数或每批人数上限，其他参数保持不变。自动分批到场时，到场计划随人数上限重新计算；各行节省时长不能直接相加。</p><div class="table-scroll"><table class="result-table capacity-table"><thead><tr><th>测试站点</th><th>当前与试算人数上限</th><th>调整后的现场总时长</th><th>总时长变化</th><th>操作</th></tr></thead><tbody>${c.stations.map(s=>{const target=capacityTargets.get(s.inputIndex)??Math.min(Number(s.cap)+1,500);return `<tr data-capacity-row="${s.inputIndex}"><td>${esc(s.name)}<small>${s.kind==='batch'?'每批人数上限':'可同时测试人数'}</small></td><td><label class="capacity-target">${s.cap} 人调整为 <input type="number" data-capacity-target="${s.inputIndex}" value="${esc(target)}" min="1" max="500" step="1" aria-label="${esc(s.name)}试算人数上限"> 人</label></td><td data-capacity-after></td><td data-capacity-change></td><td><button class="text-button" data-capacity="${s.inputIndex}">应用调整</button></td></tr>`;}).join('')}</tbody></table></div>${undoSnapshot?'<div class="undo-area"><span>已应用一次人数上限调整</span><button class="text-button" id="undo-capacity">撤回上次调整</button></div>':''}`;
+    $$('[data-capacity-row]',panel).forEach(updateCapacityRow);
+  }
+  function renderStationOperations(){
+    const c=checked.config,r=checked.result;
+    $('#station-operations').innerHTML=`<h3 id="operations-title">站点运行与排队情况</h3><p class="section-note">工作时长从本站首次开测到最后测完计算。使用率的分母包含期间的复位、空闲和整体休息。等待时间按当前到场计划计算，包含排队、凑批和统一换站等待。</p><div class="table-scroll"><table class="result-table operations-table"><thead><tr><th>测试站点</th><th>同时测试人数上限</th><th>工作时长 <button class="hint-button" data-help="work" aria-label="查看工作时长说明">?</button></th><th>首次开测时间</th><th>最后结束时间</th><th>工位使用率 <button class="hint-button" data-help="utilization" aria-label="查看工位使用率说明">?</button></th><th>人均本站等待时间</th><th>最长本站等待时间</th><th>峰值等待人数</th></tr></thead><tbody>${r.stationStats.map(stat=>`<tr data-operation-station="${stat.station}"><td>${String(stat.slot).padStart(2,'0')} ${esc(stat.name)}<small>${stat.kind==='batch'?'整批测试':'独立工位'}</small></td><td>${stat.capacity} 人<small>实际同时测试最多 ${stat.peakTesting} 人</small></td><td>${duration(stat.workDuration)}</td><td>${clock(offset()+stat.first)}</td><td>${clock(offset()+stat.last)}</td><td class="utilization-cell">${(stat.utilization*100).toFixed(1)}%</td><td>${duration(Math.round(stat.meanWait))}</td><td>${duration(stat.maxWait)}</td><td>${stat.peakQueue} 人</td></tr>`).join('')}</tbody></table></div><p class="schedule-help">人均本站等待时间和人均累计等待时间显示到整秒。整体休息与未完成的转场 / 恢复时间不计入本站等待；峰值人数按同时等待的人数计算。表格可横向滚动，站点名称保持可见。</p>`;
+    updateTableHeads();
+  }
+  function renderArrivals(panel){
+    const c=checked.config,r=checked.result,rows=r.arrivalPlan;
+    arrivalPage=Math.max(0,Math.min(arrivalPage,Math.ceil(rows.length/arrivalSize)-1));
+    const note=c.arrivalMode==='auto'?`根据各组起始站点的预计开测安排分批就位；每批${c.arrivalBatchSize?'最多 '+c.arrivalBatchSize+' 人':'按起始站点的同时测试人数上限安排'}。建议提前 ${duration(c.arrivalLead)} 到场，用于签到、热身与现场说明。此准备时间不计入本站排队，后续站点的等待仍按排程计算。`:'当前采用全体集中到场，人员在开场准备后同时就位。切换为自动分批到场可以减少首站提前排队，并查看每批建议到场时刻。';
+    const pages=Math.ceil(rows.length/arrivalSize);
+    panel.innerHTML=`<div class="arrival-note">${note}<button class="text-button" data-open-section="arrival-section">调整到场方式、每批人数与提前准备时间</button></div><div class="schedule-toolbar"><div class="schedule-controls"><label>每页显示<select id="arrival-size" aria-label="到场安排每页批次数">${options([25,50,100],arrivalSize,' 批')}</select></label><span class="schedule-caption">共 ${rows.length} 批、${c.n} 人</span></div><div class="pagination"><span>${rows.length?`${arrivalPage*arrivalSize+1}–${Math.min((arrivalPage+1)*arrivalSize,rows.length)} / ${rows.length}`:'0 批'}</span><button class="button" data-page="arrivals" data-delta="-1" ${arrivalPage===0?'disabled':''}>上一页</button><button class="button" data-page="arrivals" data-delta="1" ${arrivalPage>=pages-1?'disabled':''}>下一页</button></div></div><div class="table-scroll"><table class="result-table arrival-table"><thead><tr><th>到场批次</th><th>人员编号范围</th><th>到场人数</th><th>起始测试站点</th><th>建议到场时间</th><th>首站就位时间</th><th>本批首站开测时间</th></tr></thead><tbody>${rows.slice(arrivalPage*arrivalSize,(arrivalPage+1)*arrivalSize).map(b=>`<tr><td>第 ${b.batch} 批${b.group?'<small>第 '+b.group+' 组</small>':''}</td><td>${b.people[0]===b.people.at(-1)?`${b.people[0]} 号`:`${b.people[0]}–${b.people.at(-1)} 号`}</td><td>${b.count} 人</td><td>${esc(c.stations[b.station-1].name)}</td><td>${clock(b.report)}</td><td>${clock(b.ready)}</td><td>${clock(b.firstBegin)}${b.lastBegin!==b.firstBegin?' 至 '+clock(b.lastBegin):''}</td></tr>`).join('')}</tbody></table></div><p class="schedule-help">${c.startMs===null?'时间从全场开场起算；负数表示需要在开场前到场。填写开场日期与时间后，可显示实际钟点。':'到场和就位钟点按当前设备本地时间显示。'} 本表按设定时长与准时执行计算，调整测试方案后自动更新。</p>`;
+  }
+  function openExplanation(key){
+    const info={
+      reset:['复位时间','<p>复位时间是上一人或上一批测试结束后，同一工位或同一批次资源接待下一人 / 批次前需要的准备时间，例如设备清零、清洁或重新布置。</p><p>例如测试需要 30 秒、复位需要 10 秒，该工位最早每 40 秒接待下一人。个人离开后，复位与其转场或恢复可以同时进行；最后一次测试结束后的复位不延长本场测试结束时间。</p>'],
+      gap:['离站间隔','<p>离站间隔是个人完成本站测试后，到下一站最早可以开测之前需要经过的最低转场或恢复时间。</p><p>例如本站在 10:00:00 测完、离站间隔为 60 秒，下一站最早在 10:01:00 开测；下一站仍繁忙时还需要等待。这个间隔不占用已完成站点的工位，可与复位或整体休息重叠。</p>'],
+      work:['站点工作时长','<p>工作时长为本站首次开测至最后一人测完的时间跨度。</p><p>期间的复位、空闲和整体休息都包含在这段跨度中。它表示本站需覆盖的运行时段，不等于各工位实际测试时间相加。</p>'],
+      utilization:['工位使用率','<p>独立工位按本站首次开测至最后测完的运行跨度计算：</p><p class="formula">实际占用工位总时长 ÷（可用工位数 × 工作时长）× 100%</p><p>例如 2 个工位运行 10 分钟，两工位合计实际测试 15 分钟，使用率为 75%。复位、空闲及跨度内的整体休息会降低使用率。</p><p>整批测试按每批人数上限计算人数位置占用率：每名受测者占用一个位置，不足一批时未占用的位置会降低该比例。因此该数值不代表整批测试设备本身的开机使用率。</p>'],
+      maxWait:['最长单站等待时间','<p>取全体人员在所有站点中最长的一次等待，不把同一人的多站等待相加。它与人均累计等待时间分别反映极端等待和整体平均负担。</p><p>计算包含排队、凑批与统一换站等待，扣除整体休息；提前到场准备和最低离站间隔不计入。</p>'],
+      waiting:['人均累计等待时间','<p>先把每个人在所有站点的等待时间相加，再除以测试人数。等待从个人完成上一站并满足最低离站间隔后算起，首站从本批就位时算起，到实际开测为止，扣除整体休息。排队、凑批和等待统一换站均计入。</p><p>提前到场准备、离站后的转场或恢复不计入本站等待。按首站人数上限分批且准时就位时，首站理论排队可为零，后续站点仍可能等待。卡片显示到整秒，导出保留小数秒。</p>'],
+      queue:['预计峰值等待人数','<p>这是全场在同一时刻处于等待测试区间的不同人员数量最大值，包含排队、凑批和统一换站等待，可用于估算需要安排等待的人数。各站峰值出现在不同时刻时，不能把各站峰值直接相加。</p><p>以每人的等待区间逐时刻计算；同一时刻结束等待的人先移出，再加入新进入等待的人。计算扣除整体休息，不包含尚未完成的转场、恢复或提前到场准备。该数值不是现场总人数；统一换站时的等待人员也不一定都在下一站队列中。实际现场人数会受提前到场、迟到和测试耗时变化影响。</p>'],
+      arrivals:['集中到场与自动分批到场','<p>集中到场把所有人在开场准备结束后同时就位作为计算前提，大人数场景会产生较长的首站等待。</p><p>自动分批到场按首站既定开测顺序安排人员就位：每批人数留空时使用起始站点的人数上限；填写较大批次可减少到场批次数，但会增加首站排队。建议到场时刻为就位时刻减去提前准备时间。</p><p>该方式减少首站提前等待，保留当前人员顺序与测试时长；后续站点的排队仍按排程计算。它是基于当前方案的到场安排，不是对所有可能组织方式的全局最优解。</p>']
+    };
+    const item=info[key];if(!item)return;$('#info-title').textContent=item[0];$('#info-content').innerHTML=item[1];$('#info-dialog').showModal();
+  }
+
+  function updateCapacityRow(row){
+    const i=Number(row.dataset.capacityRow),input=$('[data-capacity-target]',row),to=Number(input.value),button=$('[data-capacity]',row);
+    if(input.value===''||!Number.isInteger(to)||to<1||to>500){input.setAttribute('aria-invalid','true');$('[data-capacity-after]',row).textContent='填写 1–500 的整数';$('[data-capacity-change]',row).textContent='—';button.disabled=true;return;}
+    input.removeAttribute('aria-invalid');button.dataset.to=to;button.disabled=to===Number(state.stations[i].cap);
+    const other=TestFlow.calculate({...state,stations:state.stations.map((s,j)=>j===i?{...s,cap:to}:s)},{totalsOnly:true});
+    if(!other.result){button.disabled=true;return;}
+    const saving=round(checked.result.actual-other.result.actual),cell=$('[data-capacity-change]',row);
+    $('[data-capacity-after]',row).textContent=duration(other.result.actual);cell.className=saving>0?'positive':saving<0?'negative':'';
+    cell.textContent=saving>0?'节省 '+duration(saving):saving<0?'增加 '+duration(-saving):'无变化';
+  }
+  const personLabel=n=>String(n).padStart(3,'0')+' 号';
+  function peopleRange(people){
+    const sorted=[...new Set(people)].sort((a,b)=>a-b),parts=[];
+    for(let i=0;i<sorted.length;i++){const first=sorted[i];let last=first;while(sorted[i+1]===last+1)last=sorted[++i];parts.push(first===last?String(first).padStart(3,'0'):String(first).padStart(3,'0')+'–'+String(last).padStart(3,'0'));}
+    return parts.join('、')+' 号';
+  }
+  function hideTooltip(){cancelAnimationFrame(hoverFrame);hoverPoint=null;$('#timeline-tooltip').hidden=true;$('#timeline-cursor')?.setAttribute('visibility','hidden');}
+  function positionTooltip(rect,event){
+    const tip=$('#timeline-tooltip');tip.hidden=false;const box=tip.getBoundingClientRect(),left=event?event.clientX+16:rect.left,top=event?event.clientY+18:rect.bottom+8;
+    tip.style.left=`${Math.max(10,Math.min(left,innerWidth-box.width-10))}px`;
+    tip.style.top=`${Math.max(10,top+box.height+10>innerHeight?(event?event.clientY:rect.top)-box.height-14:top)}px`;
+  }
+  function pointOnTimeline(event){
+    const svg=event.target.closest('svg.timeline');if(!svg||!checked.result)return null;
+    const box=svg.getBoundingClientRect(),width=svg.viewBox.baseVal.width,height=svg.viewBox.baseVal.height,x=(event.clientX-box.left)*width/box.width,y=(event.clientY-box.top)*height/box.height;
+    const station=Math.floor(y/48)+1;if(station<1||station>checked.config.stations.length)return null;
+    return {station,time:Math.max(0,Math.min(checked.result.actual,(x-7)/(width-14)*checked.result.actual)),x,svg};
+  }
+  function showStationTooltip(station,time,rect,event){
+    const snap=TestFlow.stationSnapshot(checked,station,time);if(!snap)return;tooltipDismissed=false;
+    const tip=$('#timeline-tooltip'),active=snap.active,waiting=snap.waiting,cursor=$('#timeline-cursor'),width=$('svg.timeline')?.viewBox.baseVal.width;
+    if(cursor&&width){const x=7+snap.time/checked.result.actual*(width-14);cursor.setAttribute('x1',x);cursor.setAttribute('x2',x);cursor.setAttribute('visibility','visible');}
+    let content='';
+    if(active.length&&snap.site.kind==='batch'){
+      content=`<div class="tip-batch"><strong>第 ${active[0].unit} 批 · ${active.length} 人</strong><span>${esc(peopleRange(active.map(e=>e.person)))}</span><small>${clock(offset()+active[0].begin)}–${clock(offset()+active[0].end)} · 剩余 ${duration(round(active[0].end-snap.relative))}</small></div>`;
+    }else if(active.length){
+      content=`<div class="tip-people">${active.slice(0,5).map(e=>`<div class="tip-person"><span><strong>${personLabel(e.person)}</strong><small>工位 ${e.unit}${e.group?' · 第 '+e.group+' 组':''}</small></span><span><b>剩余 ${duration(round(e.end-snap.relative))}</b><small>${clock(offset()+e.begin)}–${clock(offset()+e.end)}</small></span></div>`).join('')}</div>${active.length>5?`<p class="tip-more">另有 ${active.length-5} 人正在测试</p>`:''}`;
+    }else if(snap.pause){content=`<p class="tip-idle">${esc(snap.pause.name)}<br>${clock(snap.pause.start)}–${clock(snap.pause.end)} · 剩余 ${duration(round(snap.pause.end-snap.time))}</p>`;}
+    else content=`<p class="tip-idle">${snap.status}</p>`;
+    const next=snap.next.length?`<div class="tip-next"><span>下一次开测</span><strong>${clock(snap.nextTime)}</strong><small>${esc(peopleRange(snap.next.slice(0,5).map(e=>e.person)))}${snap.next.length>5?' 等 '+snap.next.length+' 人':''}</small></div>`:'';
+    tip.innerHTML=`<div class="tip-heading"><strong><i class="station-dot" style="background:${color(station-1)}"></i>${esc(snap.site.name)}</strong><time>${clock(snap.time)}</time></div><div class="tip-counts"><span>正在测试 <b>${active.length}</b> / ${snap.site.cap} 人</span><span>等待测试 <b>${waiting.length}</b> 人</span></div>${content}${next}<p class="tip-action">点击查看此时的完整人员名单</p>`;
+    positionTooltip(rect,event);
+  }
+  function openStationSnapshot(station,time){
+    const snap=TestFlow.stationSnapshot(checked,station,time);if(!snap)return;hideTooltip();
+    $('#snapshot-title').textContent=snap.site.name+' · '+clock(snap.time);
+    const unit=snap.site.kind==='batch'?'测试批次':'工位',rows=(list,testing)=>list.map(e=>`<tr><td>${personLabel(e.person)}${e.group?'<small>第 '+e.group+' 组</small>':''}</td><td>${unit} ${e.unit}</td><td>${clock(offset()+e.begin)}</td><td>${clock(offset()+e.end)}</td><td>${duration(round(testing?e.end-snap.relative:e.begin-snap.relative))}</td></tr>`).join('');
+    const table=(list,testing)=>`<div class="table-scroll"><table class="result-table snapshot-table"><thead><tr><th>人员</th><th>${unit}</th><th>实际开测时间</th><th>测试结束时间</th><th>${testing?'剩余测试时间':'距开测时间'}</th></tr></thead><tbody>${rows(list,testing)}</tbody></table></div>`;
+    $('#snapshot-content').innerHTML=`<p class="snapshot-state">${snap.status} · 正在测试 ${snap.active.length} 人 · 等待测试 ${snap.waiting.length} 人</p>${snap.pause?`<p class="arrival-note">${esc(snap.pause.name)}：${clock(snap.pause.start)} 至 ${clock(snap.pause.end)}。整体休息期间不计等待。</p>`:''}<h3>正在测试的人员</h3>${snap.active.length?table(snap.active,true):'<p class="snapshot-empty">此时没有人员正在本站测试。</p>'}<h3>等待本站测试的人员</h3>${snap.waiting.length?table(snap.waiting,false):'<p class="snapshot-empty">此时没有人员等待本站测试。</p>'}${snap.next.length?`<p class="schedule-help">下一次开测：${clock(snap.nextTime)}，${esc(peopleRange(snap.next.map(e=>e.person)))}。</p>`:''}<p class="schedule-help">等待包含排队、凑批及统一换站等待。人员、工位与时刻均按当前方案计算。</p>`;
+    $('#snapshot-dialog').showModal();
+  }
+  function showTooltip(target,event){
+    if(!checked.result)return;tooltipDismissed=false;
+    const c=checked.config,r=checked.result,tip=$('#timeline-tooltip'),rect=target.getBoundingClientRect();
+    if(target.dataset.record!=null){const e=r.records[Number(target.dataset.record)],s=c.stations[e.station-1];tip.innerHTML=`<div class="tip-heading"><strong>${personLabel(e.person)} · ${esc(s.name)}</strong></div><p>${clock(offset()+e.begin)} 至 ${clock(offset()+e.end)}</p><div class="tip-counts"><span>测试 ${duration(e.end-e.begin)}</span><span>等待 ${duration(e.wait)}</span></div><p>${s.kind==='batch'?'批次':'工位'} ${e.unit}${e.group?' · 第 '+e.group+' 组':''}${e.breakWait?'<br>期间整体休息 '+duration(e.breakWait):''}</p>`;}
+    else if(target.dataset.pause!=null){const b=r.effectiveBreaks[Number(target.dataset.pause)];tip.innerHTML=`<div class="tip-heading"><strong>${esc(b.name)}</strong></div><p>${clock(b.start)} 至 ${clock(b.end)}<br>休息 ${duration(b.end-b.start)} · 全场停测</p>`;}
+    else{showStationTooltip(Number(target.dataset.span)+1,offset()+Number(target.dataset.begin),rect,event);return;}
+    positionTooltip(rect,event);
+  }
+  function toast(message){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,3500);}
+  function download(text,filename,type){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  async function exportWorkbook(){
+    recalculate();if(!checked.result)return;
+    const exported=checked;
+    const button=$('#export-excel');button.disabled=true;
+    try{await new Promise(requestAnimationFrame);download(await TestFlowExport.build(exported),'测试排程.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');$('#export-dialog').close();toast(`已导出 Excel：${exported.config.n} 人的完整排程、站点运行与到场安排`);}
+    catch(error){toast('导出未完成：'+error.message);}finally{button.disabled=false;}
+  }
+  function exportCsv(){
+    recalculate();if(!checked.result)return;
+    const cell=v=>'"'+String(v).replace(/"/g,'""')+'"',safe=v=>/^[\s]*[=+\-@]/.test(String(v))?"'"+v:v;
+    const r=checked.result,header=['记录类型','人员','小组','测试次序','站点或休息名称','工位或测试批次','最早可开测_累计秒','实际开始_累计秒','结束_累计秒','本站等待_秒','整体休息重叠_秒','实际开始_时间','结束_时间','到场批次','人员编号范围','到场人数','建议到场_累计秒','首站就位_累计秒','建议到场_时间','首站就位_时间'];
+    const rows=r.records.map(e=>['测试',e.person,e.group||'',e.visit,safe(e.name),e.unit,round(offset()+e.ready),round(offset()+e.begin),round(offset()+e.end),round(e.wait),round(e.breakWait),clock(offset()+e.begin,true),clock(offset()+e.end,true),...Array(7).fill('')]);
+    r.effectiveBreaks.forEach(b=>rows.push(['整体休息','','','',safe(b.name),'','',round(b.start),round(b.end),'','',clock(b.start,true),clock(b.end,true),...Array(7).fill('')]));
+    r.arrivalPlan.forEach(b=>rows.push(['到场安排','',b.group||'','',safe(checked.config.stations[b.station-1].name),'','',round(b.firstBegin),'','','',clock(b.firstBegin,true),'',b.batch,b.people[0]===b.people.at(-1)?String(b.people[0]):b.people[0]+'–'+b.people.at(-1),b.count,round(b.report),round(b.ready),clock(b.report,true),clock(b.ready,true)]));
+    download('\uFEFF'+[header,...rows].map(row=>row.map(cell).join(',')).join('\r\n'),'测试排程.csv','text/csv;charset=utf-8');toast(`已导出 ${r.records.length.toLocaleString('zh-CN')} 条测试排程、${r.arrivalPlan.length} 批到场安排${r.effectiveBreaks.length?'及 '+r.effectiveBreaks.length+' 段整体休息':''}`);
+  }
+  function normalizePlan(raw){
+    if(!raw||![2,3,4].includes(raw.version)||raw.timeUnit!=='sec'||!Array.isArray(raw.stations)||!['sec','mixed'].includes(raw.format))throw new Error('请载入本计算器保存的方案 JSON 文件');
+    if(raw.metricCards!==undefined&&(!Array.isArray(raw.metricCards)||raw.metricCards.length!==4||raw.metricCards.some(key=>typeof key!=='string'||!Object.hasOwn(METRIC_LABELS,key))))throw new Error('方案中的卡片展示指标无效');
+    const next={metricCards:raw.metricCards,version:4,arrivalMode:raw.arrivalMode??(raw.version>=4?'auto':'all'),arrivalBatchSize:raw.arrivalBatchSize??'',arrivalLead:raw.arrivalLead??300,timeUnit:'sec',format:raw.format,n:raw.n,mode:raw.mode,groups:raw.groups??'',start:raw.start??'',prep:raw.prep??0,close:raw.close??0,buffer:raw.buffer??0,breaks:(Array.isArray(raw.breaks)?raw.breaks:[]).map(b=>({name:String(b?.name??'整体休息').slice(0,60),enabled:b?.enabled!==false,afterStage:b?.afterStage,duration:b?.duration??5400})),stations:raw.stations.map(s=>({name:s?.name??'',enabled:s?.enabled!==false,kind:s?.kind,cap:s?.cap,duration:s?.duration,reset:s?.reset??0,gap:s?.gap??0,policy:s?.policy??'full'}))};
+    if(next.stations.some(s=>typeof s.name!=='string'||s.name.length>100))throw new Error('站点名称需为不超过 100 字的文本');
+    if(typeof next.start!=='string')throw new Error('开场时间需为有效日期文本');
+    const validation=TestFlow.validate(next);if(validation.errors.length)throw new Error(validation.errors.map(e=>e.message).join('；'));
+    return next;
+  }
+  function usePlan(next){if(next.metricCards){metricCards=[...next.metricCards];saveInterface();}const {metricCards:importedCards,...parameters}=next;state=parameters;expandedStations.clear();expandedStations.add(0);arrivalPage=0;drafts.clear();timeErrors.clear();capacityTargets.clear();undoSnapshot=null;personStart=1;detailPage=0;filterStation=filterPerson='';zoom=1;renderStations();renderBreaks();syncControls();recalculate();}
+  function remapDrafts(prefix,mapIndex){
+    for(const entries of [drafts,timeErrors]){
+      const mapped=[];
+      for(const [key,value]of entries){if(!key.startsWith(prefix+'.')){mapped.push([key,value]);continue;}const p=key.split('.'),index=mapIndex(Number(p[1]));if(index===null)continue;p[1]=index;const next=p.join('.');mapped.push([next,entries===timeErrors?{...value,key:next,message:timeLabel(next)+'：'+value.message.split('：').slice(1).join('：')}:value]);}
+      entries.clear();mapped.forEach(([key,value])=>entries.set(key,value));
+    }
+  }
+  function focusError(key){
+    setSidebar(true);const prefix=key.split('.')[0];
+    if(['prep','close','buffer'].includes(key)){$('#global-section').open=true;$('#global-times').open=true;}
+    else if(key.startsWith('arrival'))$('#arrival-section').open=true;
+    else if(prefix==='station'){const row=$(`[data-row="${key.split('.')[1]}"]`);if(row){row.open=true;expandedStations.add(Number(key.split('.')[1]));}}
+    else if(['n','groups','start','mode'].includes(key))$('#global-section').open=true;
+    requestAnimationFrame(()=>{const target=targetForError(key)||$('#add-station'),input=target.matches('input,select,button')?target:$('input,select',target);target.scrollIntoView({block:'center'});(input||target).focus({preventScroll:true});});
+  }
+
+  function updateBarHeight(){const h=$('#app-bar').getBoundingClientRect().height,t=$('.result-tabs')?.getBoundingClientRect().height||45;document.documentElement.style.setProperty('--bar-height',`${h}px`);document.documentElement.style.setProperty('--tabs-height',`${t}px`);}
+  function updateTableHeads(){$$('.table-scroll').forEach(el=>{el.classList.remove('is-fitting');if(el.clientWidth>0&&el.scrollWidth<=el.clientWidth+1)el.classList.add('is-fitting');});}
+  function defaultBreak(){
+    const stages=state.stations.filter(s=>s.enabled!==false).length;
+    return {name:state.breaks.length?'整体休息 '+(state.breaks.length+1):'午间休息',enabled:true,afterStage:Math.max(1,Math.floor(stages/2)),duration:5400};
+  }
+  document.addEventListener('input',e=>{
+    const t=e.target;
+    if(t.matches('[data-capacity-target]')){capacityTargets.set(Number(t.dataset.capacityTarget),t.value);updateCapacityRow(t.closest('tr'));return;}
+    if(t.matches('[data-time]'))timeInput(t);
+    else if(t.matches('[data-global]'))state[t.dataset.global]=t.value;
+    else if(t.matches('[data-station]')&&['name','cap'].includes(t.dataset.field))state.stations[Number(t.dataset.station)][t.dataset.field]=t.value;
+    else if(t.matches('[data-break]')&&t.dataset.field==='name')state.breaks[Number(t.dataset.break)][t.dataset.field]=t.value;
+    else return;
+    undoSnapshot=null;clearTimeout(timer);$('#storage-status').textContent='正在更新';timer=setTimeout(recalculate,160);
+  });
+  document.addEventListener('change',e=>{
+    const t=e.target;
+    if(t.matches('[data-metric-slot]')){const i=Number(t.dataset.metricSlot);metricCards[i]=t.value;saveInterface();renderSummary();$(`[data-metric-slot="${i}"]`).focus({preventScroll:true});}
+    else if(t.matches('[data-station]')&&['kind','enabled','policy'].includes(t.dataset.field)){
+      const i=Number(t.dataset.station),anchors=breakAnchors();state.stations[i][t.dataset.field]=t.dataset.field==='enabled'?t.checked:t.value;restoreBreakAnchors(anchors);undoSnapshot=null;renderStations();renderBreaks();recalculate();$(`[data-station="${i}"][data-field="${t.dataset.field}"]`)?.focus({preventScroll:true});
+    }else if(t.matches('[data-break]')&&['afterStage','enabled'].includes(t.dataset.field)){
+      const i=Number(t.dataset.break),b=state.breaks[i];
+      if(t.dataset.field==='afterStage')b.afterStage=Number(t.value);else b.enabled=t.checked;
+      undoSnapshot=null;renderBreaks();recalculate();$(`[data-break="${i}"][data-field="${t.dataset.field}"]`)?.focus({preventScroll:true});
+    }else if(t.matches('[data-global],[data-time],[data-station],[data-break]'))recalculate();
+    else if(t.id==='chart-zoom'){zoom=Number(t.value);renderSchedule();$('#chart-zoom').focus({preventScroll:true});}
+    else if(t.id==='person-start'){personStart=Number(t.value);renderSchedule();$('#person-start').focus({preventScroll:true});}
+    else if(t.id==='person-size'){personSize=Number(t.value);renderSchedule();$('#person-size').focus({preventScroll:true});}
+    else if(t.id==='arrival-size'){arrivalSize=Number(t.value);arrivalPage=0;renderSchedule();$('#arrival-size').focus({preventScroll:true});}
+    else if(t.id==='detail-size'){detailSize=Number(t.value);detailPage=0;renderSchedule();$('#detail-size').focus({preventScroll:true});}
+    else if(t.id==='filter-station'||t.id==='filter-person'){if(t.id==='filter-station')filterStation=t.value;else filterPerson=t.value;detailPage=0;renderSchedule();$('#'+t.id).focus({preventScroll:true});}
+  });
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('button');if(!t||t.disabled)return;
+    if(t.id==='sidebar-toggle')setSidebar(!sidebarOpen,true);
+    else if(t.id==='sidebar-close')setSidebar(false,true);
+    else if(t.id==='dismiss-capacity'){dismissedAdviceFor=adviceSignature;$('#capacity-card').hidden=true;saveInterface();}
+    else if(t.dataset.help)openExplanation(t.dataset.help);
+    else if(t.dataset.openSection){setSidebar(true,true);const section=$('#'+t.dataset.openSection);section.open=true;requestAnimationFrame(()=>{section.scrollIntoView({block:'start'});$('summary',section).focus({preventScroll:true});});}
+    else if(t.dataset.pane){recalculate();switchPane(t.dataset.pane);}
+    else if(t.dataset.view)setView(t.dataset.view);
+    else if(t.dataset.goView){switchPane('results');setView(t.dataset.goView);}
+    else if(t.dataset.close)$('#'+t.dataset.close).close();
+    else if(t.dataset.error)focusError(t.dataset.error);
+    else if(t.dataset.mode){const changed=(state.mode==='分组轮转')!==(t.dataset.mode==='分组轮转');state.mode=t.dataset.mode;personStart=1;detailPage=0;undoSnapshot=null;syncControls();renderBreaks();recalculate();if(changed&&state.breaks.some(b=>b.enabled!==false))toast(state.mode==='分组轮转'?'休息位置已按轮次显示，请核对插入位置':'休息位置已按站点显示，请核对插入位置');}
+    else if(t.dataset.format){
+      if(timeErrors.size){toast('请先修正时间输入，再切换形式');focusError([...timeErrors.keys()][0]);return;}
+      state.format=t.dataset.format;undoSnapshot=null;drafts.clear();renderStations();renderBreaks();syncControls();recalculate();
+    }else if(t.dataset.stationAction){
+      const i=Number(t.dataset.index),action=t.dataset.stationAction,anchors=breakAnchors();
+      if(action==='remove'){const opened=[...expandedStations];expandedStations.clear();opened.filter(k=>k!==i).forEach(k=>expandedStations.add(k>i?k-1:k));state.stations.splice(i,1);remapDrafts('station',j=>j===i?null:j>i?j-1:j);}
+      else{const j=action==='up'?i-1:i+1;if(j<0||j>=state.stations.length)return;[state.stations[i],state.stations[j]]=[state.stations[j],state.stations[i]];const opened=[...expandedStations];expandedStations.clear();opened.forEach(k=>expandedStations.add(k===i?j:k===j?i:k));remapDrafts('station',k=>k===i?j:k===j?i:k);}
+      restoreBreakAnchors(anchors);undoSnapshot=null;capacityTargets.clear();filterStation='';renderStations();renderBreaks();recalculate();
+    }else if(t.dataset.breakRemove!=null){const i=Number(t.dataset.breakRemove);state.breaks.splice(i,1);remapDrafts('break',j=>j===i?null:j>i?j-1:j);undoSnapshot=null;renderBreaks();recalculate();}
+    else if(t.dataset.page){if(t.dataset.page==='arrivals')arrivalPage+=Number(t.dataset.delta);else if(t.dataset.page==='people')personStart=Math.max(1,Math.min(personStart+Number(t.dataset.delta)*personSize,checked.config.n));else detailPage+=Number(t.dataset.delta);hideTooltip();renderSchedule();}
+    else if(t.dataset.capacity!=null){
+      const i=Number(t.dataset.capacity);undoSnapshot=structuredClone(state);state.stations[i].cap=Number(t.dataset.to);capacityTargets.delete(i);renderStations();recalculate();toast(`已将 ${state.stations[i].name} 可同时测试人数上限调整为 ${state.stations[i].cap} 人`);
+    }else if(t.id==='undo-capacity'){if(undoSnapshot){const previous=undoSnapshot;undoSnapshot=null;state=previous;renderStations();recalculate();toast('已撤回上次容量调整');}}
+    else if(t.id==='add-station'){if(state.stations.length>=20)return;state.stations.push(blankStation(`站点 ${state.stations.length+1}`));expandedStations.add(state.stations.length-1);undoSnapshot=null;renderStations();renderBreaks();recalculate();const input=$(`[data-station="${state.stations.length-1}"][data-field="name"]`);input.focus();input.select();}
+    else if(t.id==='add-break'){if(state.breaks.length>=20)return;state.breaks.push(defaultBreak());undoSnapshot=null;renderBreaks();recalculate();$(`[data-break="${state.breaks.length-1}"][data-field="name"]`).focus();}
+    else if(t.id==='export-csv'){$('#export-dialog').showModal();}
+    else if(t.id==='export-excel')exportWorkbook();
+    else if(t.id==='export-raw-csv'){exportCsv();$('#export-dialog').close();}
+    else if(t.id==='save-plan'){recalculate();if(checked.result){download(JSON.stringify({...state,metricCards},null,2),'测试方案.json','application/json');toast('方案已保存');}}
+    else if(t.id==='load-plan')$('#import-file').click();
+    else if(t.id==='help-open')$('#help-dialog').showModal();
+    else if(t.id==='load-example')$('#confirm-dialog').showModal();
+    else if(t.id==='confirm-example'){$('#confirm-dialog').close();usePlan(initialPlan());toast('已载入初始方案');}
+  });
+  $('#import-file').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{if(file.size>1000000)throw new Error('方案文件过大');usePlan(normalizePlan(JSON.parse(await file.text())));toast('方案已载入');}
+    catch(error){toast('未载入：'+error.message);}finally{e.target.value='';}
+  });
+  $('#schedule-view').addEventListener('pointermove',e=>{
+    if(e.pointerType==='touch')return;
+    if(view==='stations'&&e.target.closest('svg.timeline')){
+      hoverPoint=e;if(hoverFrame)cancelAnimationFrame(hoverFrame);
+      hoverFrame=requestAnimationFrame(()=>{const event=hoverPoint;if(!event||!event.target.isConnected)return;const point=pointOnTimeline(event);if(point)showStationTooltip(point.station,point.time,point.svg.getBoundingClientRect(),event);});
+    }else{const t=e.target.closest('.task');if(t)showTooltip(t,e);else hideTooltip();}
+  });
+  $('#schedule-view').addEventListener('click',e=>{if(view==='stations'){const p=pointOnTimeline(e);if(p){openStationSnapshot(p.station,p.time);return;}}const t=e.target.closest('.task');if(t)showTooltip(t,e);});
+  $('#schedule-view').addEventListener('focusin',e=>{if(e.target.matches('.task')){e.target.setAttribute('aria-describedby','timeline-tooltip');showTooltip(e.target);}});
+  $('#schedule-view').addEventListener('pointerleave',hideTooltip);
+  $('#schedule-view').addEventListener('focusout',hideTooltip);
+  window.addEventListener('scroll',()=>{if(!tooltipDismissed&&document.activeElement.matches('.task')){const box=document.activeElement.getBoundingClientRect();if(box.top>$('#app-bar').getBoundingClientRect().bottom&&box.bottom<innerHeight){showTooltip(document.activeElement);return;}}hideTooltip();},{capture:true,passive:true});
+  window.addEventListener('resize',()=>{const mobile=innerWidth<1100;if(mobile!==wasMobile){wasMobile=mobile;if(mobile)setSidebar(false);else setSidebar(sidebarOpen);}hideTooltip();updateBarHeight();cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{if(pane==='results')renderSchedule();else updateTableHeads();});});
+  if(window.ResizeObserver)new ResizeObserver(updateBarHeight).observe($('#app-bar'));
+  for(const dialog of $$('dialog'))dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){tooltipDismissed=true;hideTooltip();if(sidebarOpen&&innerWidth<1100&&!$('dialog[open]')){setSidebar(false,true);return;}}
+    if(e.target.matches('.task[data-span]')&&['Enter',' '].includes(e.key)){e.preventDefault();openStationSnapshot(Number(e.target.dataset.span)+1,offset()+Number(e.target.dataset.begin));}
+    if(e.key==='Tab'&&sidebarOpen&&innerWidth<1100&&!$('dialog[open]')){const controls=$$('button,input,select,summary,a', $('#settings-pane')).filter(x=>!x.disabled&&x.getClientRects().length),first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+    if(e.target.matches('[data-view],[data-pane]')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+      const list=e.target.matches('[data-view]')?$$('[data-view]'):$$('[data-pane]'),i=list.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?list.length-1:(i+(e.key==='ArrowRight'?1:-1)+list.length)%list.length;
+      e.preventDefault();list[next].click();list[next].focus({preventScroll:true});
+    }
+  });
+  try{const saved=localStorage.getItem(STORAGE);if(saved)state=normalizePlan(JSON.parse(saved));}catch{/* Keep an editable initial plan if a local backup is unavailable. */}
+  document.addEventListener('toggle',e=>{if(e.target.matches('[data-row]')&&e.target.isConnected){const i=Number(e.target.dataset.row);if(e.target.open)expandedStations.add(i);else expandedStations.delete(i);}},{capture:true});
+  $('#sidebar-backdrop').addEventListener('click',()=>setSidebar(false,true));
+  try{if(innerWidth>=1100){const pref=localStorage.getItem('testflow-sidebar-open');if(pref!==null)sidebarOpen=pref==='true';}}catch{}
+  renderStations();renderBreaks();syncControls();recalculate();setSidebar(sidebarOpen);
+  const context=document.modelContext;
+  if(context?.registerTool){
+    const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
+    const tools=[{
+      name:'read_test_schedule',title:'读取测试排程',description:'读取当前参数、秒级耗时、整体休息和站点统计，不修改页面。',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},
+      execute(){recalculate();return{parameters:structuredClone(state),errors:checked.errors,result:checked.result?{actualSeconds:checked.result.actual,reservedSeconds:checked.result.reserved,breakSeconds:checked.result.breakSeconds,effectiveBreaks:checked.result.effectiveBreaks,stationStats:checked.result.stationStats,arrivalPlan:checked.result.arrivalPlan,peakWaiting:checked.result.peakWaiting,capacityReference:capacity}:null};}
+    },{
+      name:'configure_test_schedule',title:'设置测试排程',description:'使用完整参数替换当前方案，所有时长以秒为单位；整体休息在选定测试阶段全部完成后插入。',
+      inputSchema:{type:'object',required:['n','mode','stations'],additionalProperties:false,properties:{arrivalMode:{type:'string',enum:['all','auto']},arrivalBatchSize:{type:['integer','null'],minimum:1,maximum:500},arrivalLead:{type:'number',minimum:0},n:{type:'integer',minimum:1,maximum:500},mode:{type:'string',enum:TestFlow.MODES},groups:{type:['integer','null'],minimum:1,maximum:20},start:{type:'string'},prep:{type:'number',minimum:0},close:{type:'number',minimum:0},buffer:{type:'number',minimum:0},stations:{type:'array',minItems:1,maxItems:20,items:{type:'object',required:['name','kind','cap','duration'],additionalProperties:false,properties:{name:{type:'string',maxLength:100},enabled:{type:'boolean'},kind:{type:'string',enum:['independent','batch']},cap:{type:'integer',minimum:1,maximum:500},duration:{type:'number',exclusiveMinimum:0},reset:{type:'number',minimum:0},gap:{type:'number',minimum:0},policy:{type:'string',enum:['full','immediate']}}}},breaks:{type:'array',maxItems:20,items:{type:'object',required:['afterStage','duration'],additionalProperties:false,properties:{name:{type:'string',maxLength:60},enabled:{type:'boolean'},afterStage:{type:'integer',minimum:1,maximum:20},duration:{type:'number',exclusiveMinimum:0}}}}}},annotations:{readOnlyHint:false,untrustedContentHint:true},
+      execute(input){const next=normalizePlan({...input,version:4,timeUnit:'sec',format:state.format});usePlan(next);return{actualSeconds:checked.result.actual,reservedSeconds:checked.result.reserved,breakSeconds:checked.result.breakSeconds,records:checked.result.records.length};}
+    }];
+    for(const tool of tools){try{Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}}
+  }
+})();
+
+</script>
+
+</body>
+</html>

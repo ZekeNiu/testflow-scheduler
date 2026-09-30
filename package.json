@@ -1,0 +1,10 @@
+{
+  "name": "testflow-scheduler",
+  "version": "1.0.0",
+  "private": true,
+  "description": "多站点测试排程、等待统计与分批到场规划",
+  "scripts": {
+    "test": "node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs",
+    "build": "python3 build.py"
+  }
+}
