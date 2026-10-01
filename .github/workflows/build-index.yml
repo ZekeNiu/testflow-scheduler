@@ -5,13 +5,20 @@ on:
     branches:
       - main
       - persistence-work
+      - capacity-alerts-work
     paths:
       - 'src/**'
+      - 'tests/**'
+      - 'package.json'
       - 'build.py'
       - '.github/workflows/build-index.yml'
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-index-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -19,6 +26,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Run regression tests
+        run: npm test
       - name: Build index.html
         run: python3 build.py
       - name: Commit generated index
@@ -31,5 +40,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m '构建自动保存优化版本'
+          git commit -m '构建生成页面'
           git push origin HEAD:${GITHUB_REF_NAME}
