@@ -1,0 +1,44 @@
+name: Test capacity interface
+
+on:
+  push:
+    branches: [main, capacity-polish-work]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'build.py'
+      - '.github/workflows/test-capacity-ui.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run scheduling regression tests and build
+        run: |
+          npm test
+          python3 build.py
+      - name: Install isolated browser test environment
+        run: |
+          python3 -m venv /tmp/testflow-browser
+          /tmp/testflow-browser/bin/pip install playwright==1.57.0
+          /tmp/testflow-browser/bin/python -m playwright install --with-deps chromium
+      - name: Verify interface and real localStorage persistence
+        env:
+          TESTFLOW_REAL_STORAGE: '1'
+        run: |
+          /tmp/testflow-browser/bin/python tests/capacity-browser.py
+          /tmp/testflow-browser/bin/python tests/capacity-preferences.py
+      - name: Commit tested build on the working branch
+        if: github.ref_name == 'capacity-polish-work'
+        run: |
+          if git diff --quiet -- index.html; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '构建文案与关闭交互优化页面'
+          git push origin HEAD:capacity-polish-work
