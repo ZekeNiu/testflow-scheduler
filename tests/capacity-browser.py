@@ -106,8 +106,8 @@ with sync_playwright() as p:
     rotation['stations']=[station.copy(),station.copy()]
     import_plan(page, rotation)
     page.locator('#tab-stations').click()
-    expect(page.locator('#capacity-diagnostics')).not_to_contain_text('扩容可提速')
-    expect(page.locator('#capacity-diagnostics')).to_contain_text('等待关注')
+    expect(page.locator('#capacity-diagnostics')).not_to_contain_text('可缩短总时长')
+    expect(page.locator('#capacity-diagnostics')).to_contain_text('需关注等待情况')
     checks += 1
     hostile = dict(rotation, mode='个人流水线',groups='')
     hostile['stations']=[dict(station,enabled=False),dict(station,cap=2),dict(station,name='<img src=x onerror=window.pwned=1>',duration=30)]

@@ -1,34 +1,39 @@
-/* Capacity diagnostics stay embedded in operations; station columns do not grow. */
-.capacity-diagnostics{margin:0 0 16px;border:1px solid #e6d4ad;border-left:3px solid #bd8a35;border-radius:9px;background:#fffcf5;padding:14px 16px;scroll-margin-top:calc(var(--bar-height) + var(--tabs-height) + 20px)}
-.capacity-diagnostics.is-neutral{background:#f7f9f8;border-color:#dce5df;border-left-color:#8caa99}
-.diagnostic-heading,.diagnostic-item-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-.diagnostic-heading{justify-content:space-between;margin-bottom:3px}
+/* Share the advice card's surface, padding, border and close control. */
+.capacity-diagnostics{margin:0 0 16px;scroll-margin-top:calc(var(--bar-height) + var(--tabs-height) + 20px)}
+#capacity-card.capacity-overview-neutral,.capacity-diagnostics.is-neutral{background:#f5f8f6;border-color:#dbe5de}
+.diagnostic-heading{align-items:flex-start}
+.diagnostic-heading-copy{display:flex;align-items:center;flex-wrap:wrap;gap:7px 16px;min-width:0;padding-top:5px}
 .diagnostic-heading h4{font-size:14px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px}
-.diagnostic-symbol{width:18px;height:18px;border:1px solid #a27530;border-radius:50%;color:#8b601e;font-size:12px;text-align:center;line-height:16px}
-.is-neutral .diagnostic-symbol{border-color:#7e9589;color:#5d796a}
-.diagnostic-status,.diagnostic-priority{font-size:11px;color:#78633e}
-.diagnostic-item{padding:12px 0;scroll-margin-top:calc(var(--bar-height) + var(--tabs-height) + 20px)}
-.diagnostic-item + .diagnostic-item{border-top:1px solid #e9e1d1}
-.diagnostic-item-heading strong{font-size:13px;overflow-wrap:anywhere;min-width:0}
-.diagnostic-item p,.diagnostic-empty{font-size:12px;line-height:1.8;margin-top:6px}
-.diagnostic-item .diagnostic-evidence{color:var(--muted);font-size:11px;margin-top:5px}
-.diagnostic-badge{display:inline-block;border:1px solid #e5cf9e;border-radius:4px;background:#fbf0d8;color:#805618;padding:2px 6px;font-size:10px;font-weight:500;line-height:1.5;white-space:nowrap}
+.diagnostic-status,.diagnostic-priority{font-size:12px;color:var(--muted);line-height:1.7}
+.diagnostic-item{padding:13px 0;scroll-margin-top:calc(var(--bar-height) + var(--tabs-height) + 20px)}
+.diagnostic-item + .diagnostic-item{border-top:1px solid #e9dfc5}
+.diagnostic-item-heading{display:flex;align-items:center;flex-wrap:wrap;gap:7px 10px}
+.diagnostic-item-heading strong{font-size:14px;overflow-wrap:anywhere;min-width:0}
+.diagnostic-item p,.diagnostic-empty{font-size:13px;line-height:1.85;margin:7px 0 0;overflow-wrap:anywhere}
+.diagnostic-item .diagnostic-evidence{color:var(--muted);font-size:12px}
+.diagnostic-evidence strong{font-weight:500}
+.diagnostic-badge{display:inline-block;border:1px solid #e5cf9e;border-radius:4px;background:#fbf0d8;color:#805618;padding:2px 6px;font-size:11px;font-weight:500;line-height:1.5;white-space:nowrap}
 .diagnostic-badge.is-watch{border-color:#cfdbd3;background:#eef3f0;color:#597062}
 .diagnostic-badge-button{display:block;margin-top:5px;text-align:left;cursor:pointer}
 .diagnostic-badge-button:hover{filter:brightness(.97);text-decoration:underline}
-.diagnostic-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:8px}
-.diagnostic-actions .text-button{font-size:12px;min-height:28px}
-.diagnostic-scope{margin:3px 0 0;padding-top:10px;border-top:1px solid #e6e4dc;color:var(--muted);font-size:10px;line-height:1.8}
-.diagnostic-tradeoff{color:#95532b;font-size:12px;line-height:1.75}
-.diagnostic-more summary{cursor:pointer;font-size:12px;color:var(--green);padding:7px 0}
-.diagnostic-more .diagnostic-item:first-of-type{border-top:1px solid #e9e1d1}
-#capacity-card.capacity-overview-neutral{background:#f5f8f6;border-color:#dbe5de}
+.diagnostic-actions{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;margin-top:9px}
+.diagnostic-actions .text-button{font-size:12px;min-height:30px}
+.diagnostic-scope{margin:4px 0 0;padding-top:11px;border-top:1px solid #e9dfc5;color:var(--muted);font-size:12px;line-height:1.85;overflow-wrap:anywhere}
+.diagnostic-scope p{margin:0}
+.diagnostic-scope p + p{margin-top:6px}
+.diagnostic-scope strong{font-weight:500}
+.diagnostic-tradeoff{color:#95532b;font-size:13px;line-height:1.85}
+.diagnostic-more summary{cursor:pointer;font-size:13px;color:var(--green);padding:8px 0}
+.diagnostic-more .diagnostic-item:first-of-type{border-top:1px solid #e9dfc5}
+.capacity-overview-copy{min-width:0;flex:1;overflow-wrap:anywhere}
+.capacity-overview-copy p{margin:0}
+.capacity-overview-copy .diagnostic-tradeoff{margin-top:6px}
 #capacity-hint>.diagnostic-actions{margin-top:0;flex-shrink:0}
 .diagnostic-focus{outline:2px solid #b68b43!important;outline-offset:3px;border-radius:4px}
-.capacity-baseline{font-size:12px;color:var(--muted);line-height:1.9;padding:10px 12px;margin:0 0 12px;background:var(--soft);border-radius:6px}
-.diagnostic-capacity-table{min-width:1080px}
+.capacity-baseline{font-size:13px;color:var(--muted);line-height:1.9;padding:11px 13px;margin:0 0 12px;background:var(--soft);border-radius:6px}
+.diagnostic-capacity-table{min-width:1160px}
 .diagnostic-capacity-table td:first-child{max-width:220px;white-space:normal;overflow-wrap:anywhere}
 .diagnostic-capacity-table small{font-weight:400}
-@media(max-width:760px){.capacity-diagnostics{padding:12px}.diagnostic-heading{align-items:flex-start;gap:5px}.diagnostic-status{width:100%;padding-left:25px}.diagnostic-item-heading{gap:6px}.diagnostic-priority{width:100%}#capacity-hint>.diagnostic-actions{display:flex;gap:18px;margin-top:6px}.advice-card #capacity-hint .diagnostic-actions .text-button{margin-top:0;display:inline-flex}}
+@media(max-width:760px){.diagnostic-heading-copy{display:block;padding-top:7px}.diagnostic-status{display:block;margin-top:6px}.diagnostic-item-heading{gap:7px}.diagnostic-priority{width:100%}.diagnostic-item p{font-size:13px}#capacity-hint>.diagnostic-actions{display:flex;gap:18px;margin-top:9px}.advice-card #capacity-hint .diagnostic-actions .text-button{margin-top:0;display:inline-flex}}
 @media(prefers-reduced-motion:reduce){.capacity-diagnostics,.diagnostic-focus{scroll-behavior:auto}}
-@media print{.diagnostic-actions,.diagnostic-more summary,.diagnostic-symbol,.diagnostic-badge-button{display:none!important}.capacity-diagnostics{break-inside:avoid;border:1px solid #ccc;background:#fff}.diagnostic-more:not([open]){display:none}}
+@media print{.diagnostic-actions,.diagnostic-more summary,.diagnostic-badge-button,#dismiss-diagnostics{display:none!important}.capacity-diagnostics:not([hidden]){display:block!important;break-inside:avoid;border:1px solid #ccc;background:#fff;box-shadow:none}.diagnostic-more:not([open]){display:none}}
