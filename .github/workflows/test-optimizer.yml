@@ -1,0 +1,66 @@
+name: Test plan optimizer
+
+on:
+  push:
+    branches: [main, plan-optimizer-work]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'build.py'
+      - 'package.json'
+      - '.github/workflows/test-optimizer.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: optimizer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate scheduling and optimizer calculations
+        run: |
+          npm test
+          node tests/optimizer.cjs
+          python3 build.py
+      - name: Install browser verification environment
+        run: |
+          python3 -m venv /tmp/testflow-browser
+          /tmp/testflow-browser/bin/pip install playwright==1.57.0
+          /tmp/testflow-browser/bin/python -m playwright install --with-deps chromium
+      - name: Verify interface and real browser storage
+        env:
+          TESTFLOW_REAL_STORAGE: '1'
+          TESTFLOW_SCREENSHOTS: test-results/optimizer
+        run: |
+          /tmp/testflow-browser/bin/python tests/capacity-browser.py
+          /tmp/testflow-browser/bin/python tests/capacity-preferences.py
+          /tmp/testflow-browser/bin/python tests/optimizer-browser.py
+      - name: Save verified source and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflow-optimizer-verification
+          path: |
+            src/
+            tests/
+            docs/
+            build.py
+            package.json
+            index.html
+            test-results/
+          retention-days: 7
+      - name: Commit generated page on working branch
+        if: github.ref_name == 'plan-optimizer-work'
+        run: |
+          if git diff --quiet -- index.html; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '构建已验证的方案优化页面'
+          git push origin HEAD:plan-optimizer-work
