@@ -1,0 +1,73 @@
+name: Verify unified optimizer
+on:
+  push:
+    branches: [main, unified-optimizer-work]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'build.py'
+      - 'package.json'
+      - '.github/workflows/test-unified.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: unified-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser verification environment
+        run: |
+          python3 -m venv /tmp/testflow-browser
+          /tmp/testflow-browser/bin/pip install playwright==1.57.0
+          /tmp/testflow-browser/bin/python -m playwright install --with-deps chromium
+      - name: Verify calculations, generated page, and interface
+        env:
+          TESTFLOW_REAL_STORAGE: '1'
+          TESTFLOW_SCREENSHOTS: test-results/unified
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          commands=[['npm','test'],['node','tests/optimizer.cjs'],['node','tests/unified-optimizer.cjs'],['python3','build.py'],['/tmp/testflow-browser/bin/python','tests/unified-browser.py']]
+          if os.environ['GITHUB_REF_NAME']=='main': commands.append(['git','diff','--exit-code','--','index.html'])
+          report={'sourceCommit':os.environ['GITHUB_SHA'],'runUrl':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'browserSuitePresent':True,'checks':[]}
+          for cmd in commands:
+              try:
+                  p=subprocess.run(cmd,capture_output=True,text=True,timeout=360)
+                  item={'command':' '.join(cmd),'exitCode':p.returncode,'stdout':p.stdout[-20000:],'stderr':p.stderr[-12000:]}
+              except Exception as e:
+                  item={'command':' '.join(cmd),'exitCode':1,'stdout':'','stderr':str(e)}
+              report['checks'].append(item)
+              print(item['command'],item['exitCode']);print(item['stdout']);print(item['stderr'])
+          report['passed']=all(x['exitCode']==0 for x in report['checks'])
+          report['browserVerified']=report['passed']
+          report['sha256']={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*sorted(Path('src').glob('*')),*sorted(Path('tests').glob('*')),Path('build.py'),Path('index.html')] if p.is_file()}
+          Path('docs/unified-verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          raise SystemExit(0 if report['passed'] else 1)
+          PY
+      - name: Save verification evidence and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-optimizer-verification
+          path: |
+            docs/unified-verification.json
+            test-results/
+            index.html
+          retention-days: 14
+      - name: Preserve work-branch evidence and verified page
+        if: always() && github.ref_name == 'unified-optimizer-work'
+        run: |
+          if [ ! -f docs/unified-verification.json ]; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/unified-verification.json
+          if python3 -c "import json; assert json.load(open('docs/unified-verification.json'))['browserVerified']"; then git add index.html; fi
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m '记录统一优化验证结果与已验证构建'
+          git push origin HEAD:unified-optimizer-work
