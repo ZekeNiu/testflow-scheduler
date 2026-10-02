@@ -24,12 +24,29 @@ def script_text(file):
 
 
 html = (source / 'head.html').read_text(encoding='utf-8')
+html += '\n<meta name="testflow-release" content="unified-optimizer-20261002">\n'
 css = '\n'.join((source / name).read_text(encoding='utf-8') for name in ['testflow.css', 'testflow-capacity.css', 'testflow-optimizer.css'])
 html += '<style>\n' + css + '\n</style>\n</head>\n<body>\n'
 html += (source / 'testflow-body.html').read_text(encoding='utf-8')
-# Worker code is embedded to preserve the single-file, offline distribution.
+# Inline worker source keeps all computation available in the single offline HTML.
 worker = '\n'.join((source / name).read_text(encoding='utf-8') for name in ['testflow-engine.js', 'testflow-optimizer.js'])
-worker += "\nonmessage=async event=>{try{const result=await TestFlowOptimizer.searchAsync(event.data.raw,event.data.options,{progress:(done,total)=>postMessage({type:'progress',done,total})});postMessage({type:'result',result});}catch(error){postMessage({type:'error',message:error.message});}};"
+worker += '''
+onmessage = async event => {
+  try {
+    const p = event.data;
+    let result;
+    if (p.action === 'manual') result = TestFlowOptimizer.manual(p.raw, p.targets, p.options, p.base);
+    else if (p.action === 'stress') result = TestFlowOptimizer.stress(p.raw, p.row, p.percent, p.options);
+    else if (!p.action || p.action === 'search') result = await TestFlowOptimizer.searchAsync(p.raw, p.options, {
+      progress: (done, total) => postMessage({type: 'progress', done, total})
+    });
+    else throw new Error('Unsupported comparison action');
+    postMessage({type: 'result', result});
+  } catch (error) {
+    postMessage({type: 'error', message: error.message});
+  }
+};
+'''
 html += '\n<script type="application/json" id="testflow-optimizer-worker">' + json.dumps(worker, ensure_ascii=False).replace('<', '\\u003c') + '</script>\n'
 html += ''.join('\n<script>\n' + script_text(file) + '\n</script>\n' for file in scripts)
 html += '\n</body>\n</html>\n'
