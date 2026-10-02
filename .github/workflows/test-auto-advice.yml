@@ -28,16 +28,20 @@ jobs:
           python3 - <<'PY'
           import hashlib,json,os,subprocess
           from pathlib import Path
-          commands=[['npm','test'],['node','tests/optimizer.cjs'],['node','tests/unified-optimizer.cjs'],['node','tests/auto-advice.cjs'],['python3','build.py'],['/tmp/testflow-browser/bin/python','tests/unified-browser.py']]
-          if Path('tests/auto-advice-browser.py').exists():commands.append(['/tmp/testflow-browser/bin/python','tests/auto-advice-browser.py'])
+          commands=[['npm','test'],['node','tests/optimizer.cjs'],['node','tests/unified-optimizer.cjs'],['node','tests/auto-advice.cjs'],['python3','build.py'],['/tmp/testflow-browser/bin/python','tests/unified-browser.py'],['/tmp/testflow-browser/bin/python','tests/auto-advice-browser.py']]
           if os.environ['GITHUB_REF_NAME']=='main':commands.append(['git','diff','--exit-code','--','index.html'])
           report={'sourceCommit':os.environ['GITHUB_SHA'],'runUrl':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'checks':[]}
           for command in commands:
+              print('Checking: '+' '.join(command),flush=True)
               try:
                   p=subprocess.run(command,capture_output=True,text=True,timeout=360)
                   item={'command':' '.join(command),'exitCode':p.returncode,'stdout':p.stdout[-24000:],'stderr':p.stderr[-12000:]}
+              except subprocess.TimeoutExpired as error:
+                  output=error.stdout or b''
+                  if isinstance(output,bytes):output=output.decode('utf-8',errors='replace')
+                  item={'command':' '.join(command),'exitCode':1,'stdout':output[-24000:],'stderr':str(error)}
               except Exception as error:item={'command':' '.join(command),'exitCode':1,'stdout':'','stderr':str(error)}
-              report['checks'].append(item);print(item['command'],item['exitCode']);print(item['stdout']);print(item['stderr'])
+              report['checks'].append(item);print(item['command'],item['exitCode'],flush=True);print(item['stdout'],flush=True);print(item['stderr'],flush=True)
           report['passed']=all(item['exitCode']==0 for item in report['checks'])
           report['autoBrowserPresent']=Path('tests/auto-advice-browser.py').exists()
           report['sha256']={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*sorted(Path('src').glob('*')),*sorted(Path('tests').glob('*')),Path('build.py'),Path('index.html')] if p.is_file()}
@@ -58,6 +62,11 @@ jobs:
         if: always() && github.ref_name == 'auto-advice-work'
         run: |
           if [ ! -f docs/auto-advice-verification.json ]; then exit 0; fi
+          remote=$(git ls-remote origin refs/heads/auto-advice-work | cut -f1)
+          if [ "$remote" != "$GITHUB_SHA" ]; then
+            echo 'The branch advanced during verification; evidence is in the artifact. No newer work is overwritten.'
+            exit 0
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add docs/auto-advice-verification.json
