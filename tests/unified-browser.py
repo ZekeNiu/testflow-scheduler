@@ -46,7 +46,7 @@ def preview_snapshot(page):
     import base64, zlib
     html=page.evaluate("""()=>{const doc=document.documentElement.cloneNode(true);doc.querySelectorAll('script').forEach(e=>e.remove());return '<!doctype html>'+doc.outerHTML;}""")
     encoded=base64.b64encode(zlib.compress(html.encode('utf-8'),9)).decode('ascii')
-    Path('docs/unified-preview.b64').write_text(encoded+'\n',encoding='ascii')
+    Path('docs/unified-preview.b64').write_text('\n'.join(encoded[i:i+3000] for i in range(0,len(encoded),3000))+'\n',encoding='ascii')
 
 def assert_no_overflow(page):
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),page.evaluate('({width:innerWidth,scroll:document.documentElement.scrollWidth})')
@@ -173,6 +173,56 @@ with sync_playwright() as pw:
         fallback=attach(browser,worker=False);fallback.locator('#tab-optimizer').click();generate(fallback);expect(fallback.locator('#optimizer-results')).to_contain_text('2 / 2')
         nostorage=attach(browser,worker=False,storage=False);nostorage.locator('#tab-optimizer').click();generate(nostorage);expect(nostorage.locator('#optimizer-result-title')).to_be_visible()
         check('No-worker fallback and unavailable-storage operation remain usable')
+        extra=attach(browser);extra_initial=saved(extra)
+        extra.locator('#dismiss-capacity').focus();extra.keyboard.press('Enter')
+        expect(extra.locator('#results-title')).to_be_focused()
+        extra.locator('[data-metric-slot="0"]').select_option('people')
+        extra.locator('#chart-zoom').select_option('2')
+        extra.set_viewport_size({'width':1380,'height':900})
+        expect(extra.locator('#capacity-card')).to_be_hidden()
+        extra.locator('#n').fill('0');expect(extra.locator('#valid-results')).to_be_hidden()
+        extra.locator('#n').fill(str(extra_initial['n']));expect(extra.locator('#capacity-card')).to_be_hidden()
+        extra.locator('#n').fill(str(extra_initial['n']+1));expect(extra.locator('#capacity-card')).to_be_visible()
+        extra.locator('#n').fill(str(extra_initial['n']));expect(extra.locator('#capacity-card')).to_be_visible()
+        check('Keyboard dismissal restores focus; view preferences and invalid repair preserve it, valid changes reset it')
+        hostile=copy.deepcopy(joint);hostile.update(mode='个人流水线',groups='',n=4)
+        hostile['stations']=[dict(joint['stations'][0],name='停用站',enabled=False),dict(joint['stations'][0],name='同名站点'),dict(joint['stations'][0],name='<img src=x onerror=window.pwned=1>')]
+        import_plan(extra,hostile);extra.locator('#tab-optimizer').click();option(extra,'allowCapacity',True)
+        expect(extra.locator('[data-opt-cap-max="0"]')).to_have_count(0)
+        cap(extra,2,2);open_detail(extra,'optimizer-manual');target(extra,2,2);manual(extra)
+        expect(extra.locator('.optimizer-recommendation')).to_contain_text('<img src=x')
+        expect(extra.locator('#optimizer-results img')).to_have_count(0);assert not extra.evaluate('Boolean(window.pwned)')
+        confirm(extra);assert [s['cap'] for s in saved(extra)['stations']]==[1,1,2]
+        extra.locator('#optimizer-undo').click();assert saved(extra)==hostile
+        batch=copy.deepcopy(joint);batch.update(mode='个人流水线',groups='',n=12,stations=[dict(joint['stations'][0],name='整批站',kind='batch',cap=2,duration=60)])
+        import_plan(extra,batch);cap(extra,0,3);open_detail(extra,'optimizer-manual');target(extra,0,3);manual(extra)
+        expect(extra.locator('.optimizer-recommendation')).to_contain_text('每批人数上限由 2 人调整为 3 人')
+        check('Escaped station names, disabled indices, atomic targeting and batch-versus-workstation wording')
+        migration=attach(browser);migration_initial=saved(migration)
+        old_options={'version':1,'options':{'meanLimit':600,'goal':'wait'}}
+        migration.evaluate("o=>{localStorage.removeItem('testflow-optimizer-preferences-v2');localStorage.setItem('testflow-optimizer-preferences-v1',JSON.stringify(o))}",old_options)
+        old_value=migration.evaluate("localStorage.getItem('testflow-optimizer-preferences-v1')")
+        migration.reload();migration.locator('#tab-optimizer').click()
+        expect(migration.locator('[data-opt-number="meanLimit"]')).to_have_value('10')
+        expect(migration.locator('#optimizer-goal')).to_have_value('wait')
+        assert migration.evaluate("localStorage.getItem('testflow-optimizer-preferences-v1')")==old_value
+        assert saved(migration)==migration_initial
+        check('Old optimization preferences migrate read-only without changing legacy keys or the saved plan')
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix='testflow-unified-profile-') as profile:
+            launch={'executable_path':executable,'headless':True,'args':['--no-sandbox'],'viewport':{'width':1440,'height':1000},'reduced_motion':'reduce'}
+            context=pw.chromium.launch_persistent_context(profile,**launch)
+            context.route('**/*',lambda route:route.fulfill(status=200,content_type='text/html; charset=utf-8',body=HTML))
+            disk=context.new_page();disk.goto('http://testflow.test/');disk_initial=saved(disk)
+            disk.locator('[data-metric-slot="0"]').select_option('people');disk.locator('#dismiss-capacity').click()
+            disk.locator('#tab-optimizer').click();num(disk,'meanLimit',10);context.close()
+            context=pw.chromium.launch_persistent_context(profile,**launch)
+            context.route('**/*',lambda route:route.fulfill(status=200,content_type='text/html; charset=utf-8',body=HTML))
+            disk=context.new_page();disk.goto('http://testflow.test/')
+            expect(disk.locator('#capacity-card')).to_be_hidden();expect(disk.locator('[data-metric-slot="0"]')).to_have_value('people')
+            disk.locator('#tab-optimizer').click();expect(disk.locator('[data-opt-number="meanLimit"]')).to_have_value('10')
+            assert saved(disk)==disk_initial;context.close()
+        check('Browser restart with the same real disk profile preserves plan, metrics, dismissal and optimizer preferences')
         assert not errors,errors
         print(json.dumps({'unifiedBrowserChecks':len(checks),'storageMode':'real','checks':checks,'pageErrors':errors},ensure_ascii=False),flush=True)
     except Exception:

@@ -29,6 +29,7 @@
     const signature=JSON.stringify(v.config);
     if(signature!==optScopeSignature){
       if(optScopeSignature)optNotice='当前方案已变化；旧试算已失效，容量边界已回到当前值，请重新核对。';
+      if(dismissedDiagnosticsFor&&dismissedDiagnosticsFor!==signature){dismissedDiagnosticsFor='';saveDiagnosticDismissal();}
       optScopeSignature=signature;optOptions.capacityRanges=v.config.stations.map(s=>({inputIndex:s.inputIndex,max:s.cap}));
       optMaxDrafts.clear();optTargets.clear();optManualBase=null;optManualError='';optResource='unconfirmed';optSave();
     }
@@ -226,7 +227,18 @@
     if(t.matches('[data-opt-number]')){optDrafts.set(t.dataset.optNumber,t.value);optValidate();}
     else if(t.matches('[data-opt-cap-max]')){optMaxDrafts.set(Number(t.dataset.optCapMax),t.value);optValidate();}
     else if(t.matches('[data-opt-target]')){optStop();optTargets.set(Number(t.dataset.optTarget),t.value);optManual=null;optDisplay='manual';optStress=null;optManualError='';optNotice='手动试算值已修改，请点击“比较手动方案”。';optRefreshResults();}
-    else if(t.id==='optimizer-stress-percent'){if(optBusy==='stress')optStop();optStressPercent=t.value;optStress=null;optStressError='';if($('#optimizer-stress-result'))$('#optimizer-stress-result').innerHTML='';if($('#optimizer-stress-error'))$('#optimizer-stress-error').textContent='';}
+    else if(t.id==='optimizer-stress-percent'){
+      if(optBusy==='stress'){
+        optStop();optNotice='情景比例已修改，请重新检验。';
+        for(const id of ['optimizer-run','optimizer-manual-run'])if($('#'+id))$('#'+id).disabled=!!optError||optResource==='shared';
+        if($('#optimizer-cancel'))$('#optimizer-cancel').hidden=true;
+        if($('#optimizer-progress'))$('#optimizer-progress').textContent=optNotice;
+      }
+      optStressPercent=t.value;optStress=null;optStressError='';
+      if($('#optimizer-stress-run'))$('#optimizer-stress-run').disabled=false;
+      if($('#optimizer-stress-result'))$('#optimizer-stress-result').innerHTML='';
+      if($('#optimizer-stress-error'))$('#optimizer-stress-error').textContent='';
+    }
   });
   document.addEventListener('change',e=>{
     const t=e.target;
@@ -238,7 +250,7 @@
   document.addEventListener('click',e=>{
     const t=e.target.closest('button');if(!t||t.disabled)return;
     if(t.id==='dismiss-capacity'){
-      e.stopImmediatePropagation();dismissedAdviceFor=adviceSignature;dismissedDiagnosticsFor=adviceSignature;saveInterface();saveDiagnosticDismissal();$('#capacity-card').hidden=true;toast('已关闭本方案的检查提示；未应用试算不会恢复提示。');
+      e.stopImmediatePropagation();dismissedAdviceFor=adviceSignature;dismissedDiagnosticsFor=adviceSignature;saveInterface();saveDiagnosticDismissal();$('#capacity-card').hidden=true;const heading=$('#results-title');heading.tabIndex=-1;heading.focus({preventScroll:true});toast('已关闭本方案的检查提示；未应用试算不会恢复提示。');
     }else if(t.dataset.capacity!==undefined||t.dataset.diagnosticAction){
       e.stopImmediatePropagation();optOpen.add('optimizer-manual');switchPane('results');setView('optimizer');
     }
