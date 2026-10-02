@@ -42,6 +42,12 @@ def confirm(page):
     expect(page.locator('#optimizer-confirm-apply')).to_be_disabled()
     page.locator('#optimizer-confirm-reviewed').check();page.locator('#optimizer-confirm-apply').click()
     expect(page.locator('#optimizer-confirm')).to_be_hidden()
+def preview_snapshot(page):
+    import base64, zlib
+    html=page.evaluate("""()=>{const doc=document.documentElement.cloneNode(true);doc.querySelectorAll('script').forEach(e=>e.remove());return '<!doctype html>'+doc.outerHTML;}""")
+    encoded=base64.b64encode(zlib.compress(html.encode('utf-8'),9)).decode('ascii')
+    Path('docs/unified-preview.b64').write_text(encoded+'\n',encoding='ascii')
+
 def assert_no_overflow(page):
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),page.evaluate('({width:innerWidth,scroll:document.documentElement.scrollWidth})')
 
@@ -61,6 +67,7 @@ with sync_playwright() as pw:
         assert saved(page)==initial and workers
         expect(page.locator('.optimizer-comparison').first.locator('tbody tr')).to_have_count(9)
         check('Default fixed-capacity worker comparison, complete metrics and no plan mutation')
+        preview_snapshot(page)
         option(page,'allowRotation',True);option(page,'allowArrival',True);generate(page)
         expect(page.locator('#optimizer-results')).to_contain_text('14 / 14');expect(page.locator('#optimizer-results')).to_contain_text('需要权衡')
         expected=page.evaluate("""()=>{const p=JSON.parse(localStorage.getItem('testflow-plan-v2')),o=JSON.parse(localStorage.getItem('testflow-optimizer-preferences-v2')).options;return TestFlowOptimizer.apply(p,TestFlowOptimizer.search(p,o).recommendation)}""")

@@ -1,18 +1,18 @@
 {
-  "sourceCommit": "2c4c19bc3055eaa491abd96b55a1162b3072c2cd",
-  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36966284487",
+  "sourceCommit": "7eb8812f1aabbfdbef94705569da55d6f6d3a6aa",
+  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36966452195",
   "browserSuitePresent": true,
   "checks": [
     {
       "command": "npm test",
       "exitCode": 0,
-      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":125,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":433}\n",
+      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":83,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":382}\n",
       "stderr": ""
     },
     {
       "command": "node tests/optimizer.cjs",
       "exitCode": 0,
-      "stdout": "{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":999}\n",
+      "stdout": "{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":814}\n",
       "stderr": ""
     },
     {
@@ -24,16 +24,34 @@
     {
       "command": "python3 build.py",
       "exitCode": 0,
-      "stdout": "Built index.html: 336998 bytes\n",
+      "stdout": "Built index.html: 337411 bytes\n",
       "stderr": ""
     },
     {
       "command": "/tmp/testflow-browser/bin/python tests/unified-browser.py",
-      "exitCode": 1,
-      "stdout": "PASS: Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\nPASS: Default fixed-capacity worker comparison, complete metrics and no plan mutation\nPASS: Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\nPASS: Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\n{\"checksBeforeFailure\": [\"Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\", \"Default fixed-capacity worker comparison, complete metrics and no plan mutation\", \"Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\", \"Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\"], \"pageErrors\": []}\n",
-      "stderr": "Traceback (most recent call last):\n  File \"/home/runner/work/testflow-scheduler/testflow-scheduler/tests/unified-browser.py\", line 86, in <module>\n    expect(page.locator('[data-opt-target=\"0\"]')).to_have_attribute('max','2')\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 19408, in to_have_attribute\n    self._sync(\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 266, in to_have_attribute\n    await self._expect_impl(\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 85, in _expect_impl\n    raise AssertionError(\nAssertionError: Locator expected to have attribute '2'\nActual value: 1 \nCall log:\n  - Expect \"to_have_attribute\" with timeout 5000ms\n  - waiting for locator(\"[data-opt-target=\\\"0\\\"]\")\n    9 × locator resolved to <input min=\"1\" max=\"1\" step=\"1\" value=\"1\" type=\"number\" data-opt-target=\"0\" aria-label=\"A本次试算人数\"/>\n      - unexpected value \"1\"\n\n"
+      "exitCode": 0,
+      "stdout": "PASS: Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\nPASS: Default fixed-capacity worker comparison, complete metrics and no plan mutation\nPASS: Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\nPASS: Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\nPASS: Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions\nPASS: Invalid manual drafts persist across views and cannot exceed available resources\nPASS: Duration scenario compares both plans, invalidates edited results and never changes nominal parameters\nPASS: Known shared resources block unsupported recommendations rather than implying feasibility\nPASS: Bounded-search honesty and persistent invalid preference drafts\nPASS: Actual plan edits invalidate results and reset index-scoped resource bounds\nPASS: Undo cannot overwrite subsequent actual plan edits\nPASS: Single advisory dismissal survives preferences, trials, tab changes and real localStorage reload\nPASS: Overall-rest semantics remain protected across organizational alternatives\nPASS: Large calculations remain cancellable without stale result application\nPASS: JSON save, complete CSV export and styled four-sheet XLSX export are preserved\nPASS: All existing result views and keyboard station snapshots remain functional\nPASS: Automatic/manual/confirmation layout without page overflow at 320px\nPASS: Automatic/manual/confirmation layout without page overflow at 390px\nPASS: Automatic/manual/confirmation layout without page overflow at 768px\nPASS: Automatic/manual/confirmation layout without page overflow at 1024px\nPASS: Automatic/manual/confirmation layout without page overflow at 1280px\nPASS: No-worker fallback and unavailable-storage operation remain usable\n{\"unifiedBrowserChecks\": 22, \"storageMode\": \"real\", \"checks\": [\"Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\", \"Default fixed-capacity worker comparison, complete metrics and no plan mutation\", \"Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\", \"Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\", \"Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions\", \"Invalid manual drafts persist across views and cannot exceed available resources\", \"Duration scenario compares both plans, invalidates edited results and never changes nominal parameters\", \"Known shared resources block unsupported recommendations rather than implying feasibility\", \"Bounded-search honesty and persistent invalid preference drafts\", \"Actual plan edits invalidate results and reset index-scoped resource bounds\", \"Undo cannot overwrite subsequent actual plan edits\", \"Single advisory dismissal survives preferences, trials, tab changes and real localStorage reload\", \"Overall-rest semantics remain protected across organizational alternatives\", \"Large calculations remain cancellable without stale result application\", \"JSON save, complete CSV export and styled four-sheet XLSX export are preserved\", \"All existing result views and keyboard station snapshots remain functional\", \"Automatic/manual/confirmation layout without page overflow at 320px\", \"Automatic/manual/confirmation layout without page overflow at 390px\", \"Automatic/manual/confirmation layout without page overflow at 768px\", \"Automatic/manual/confirmation layout without page overflow at 1024px\", \"Automatic/manual/confirmation layout without page overflow at 1280px\", \"No-worker fallback and unavailable-storage operation remain usable\"], \"pageErrors\": []}\n",
+      "stderr": ""
     }
   ],
-  "passed": false,
-  "browserVerified": false
+  "passed": true,
+  "browserVerified": true,
+  "sha256": {
+    "src/head.html": "b54d55844f2b615ba0b6c6824ba00d410a1e1772e54b9726b3f6df17f36aad22",
+    "src/testflow-body.html": "989357aa6cf5fc488225e44af7e3b8ec49df86c4bcdc609997facf9555242880",
+    "src/testflow-capacity-ui.js": "bafff0b34d1bd91f800a536d2f3645c2f45643680ed4d45f3408d97f32d70d28",
+    "src/testflow-capacity.css": "3b8c7315a61cc9c50673b8ed3b8e630062ea73ff0f93faf82b16631b72c824bb",
+    "src/testflow-diagnostics.js": "6da7b45f0dcbdbfbd221d36f18a9cde2238b65e045a3c12fce80ddfbc88f6de7",
+    "src/testflow-engine.js": "d6268c1be3df27b3a5b0b014a2f099408bded5636cd5a92907d0d46513e6ca1d",
+    "src/testflow-export.js": "e714e4430d5105afffa43580e50a69dbfa9f93a8f84b9a9b0083fa779d79c5c0",
+    "src/testflow-optimizer-ui.js": "5eb2303361100d91bd2e5c0f646857ab94ac82de9d81d5acfca7dfe483b57a15",
+    "src/testflow-optimizer.css": "877d2aa3344d81aa49abcba2032c3afeb0f51e90495d6e4cef1f698e25f16606",
+    "src/testflow-optimizer.js": "2385eaf4b2c4b1480b86263020b58cbaee5259a198c5f8ba27270301776352a5",
+    "src/testflow-persistence.js": "f7c24a1fac12e3bed60338ffec37a7fc690c5bd7c83afce5ce76cf8c0fd664c5",
+    "src/testflow-ui.js": "67ac43b81b1b2307ecf36fa3af5d82a5d9b96a69e24c5bc523d1c633eef7830e",
+    "src/testflow-xlsx-template.js": "578dd2de756875155e7bfc5571e61eb0a408cf610374247569802eb5461055a7",
+    "src/testflow.css": "9168854c13751f280202b3c7ea7744c92d586993f9504626ee5899c96ad4d2b7",
+    "build.py": "a200b928b919edaa1702328f0a5f50ecabf71282d9cce7c8b71b2ffd661afae0",
+    "index.html": "f06469fd456661b8a12404af8ec398ecbfa628fe26f0af1f87307b7268a91349"
+  }
 }

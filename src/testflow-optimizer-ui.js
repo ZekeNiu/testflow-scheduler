@@ -55,7 +55,7 @@
   function optManualPanel(){
     return `<details id="optimizer-manual" class="optimizer-disclosure" ${optOpen.has('optimizer-manual')?'open':''}><summary>手动容量试算 · 同时调整一个或多个站点</summary><div class="optimizer-disclosure-body"><p>试算基于<strong>${optManualBase?'已载入候选的组织方式':'当前方案的组织方式'}</strong>，${optManualBase?esc(optPlan(optManualBase)):esc(optPlan({patch:checked.config}))}。所有结果仍与当前方案比较，不会逐站应用或累加收益。</p>${!optOptions.allowCapacity?'<p class="section-note">当前保持现有容量。手动调整前，请先允许容量调整并填写可用上限。</p><button id="optimizer-enable-capacity" class="button quiet">设置容量调整边界</button>':''}<div class="table-scroll"><table class="result-table optimizer-capacity-table"><thead><tr><th>测试站点</th><th>容量含义</th><th>当前 / 可用上限</th><th>本次试算人数</th></tr></thead><tbody>${checked.config.stations.map(s=>{
       const max=optOptions.capacityRanges.find(r=>r.inputIndex===s.inputIndex)?.max??s.cap,value=optTargets.get(s.inputIndex)??s.cap;
-      return `<tr><td>${esc(s.name)}</td><td>${optField(s.kind)}</td><td>${s.cap} 人 / ${max} 人</td><td><label class="capacity-target"><input type="number" data-opt-target="${s.inputIndex}" value="${esc(value)}" min="1" max="${max}" step="1" ${optOptions.allowCapacity?'':'disabled'} aria-label="${esc(s.name)}本次试算人数"> 人</label></td></tr>`;
+      return `<tr><td>${esc(s.name)}</td><td>${optField(s.kind)}</td><td data-opt-manual-bound="${s.inputIndex}">${s.cap} 人 / ${max} 人</td><td><label class="capacity-target"><input type="number" data-opt-target="${s.inputIndex}" value="${esc(value)}" min="1" max="${max}" step="1" ${optOptions.allowCapacity?'':'disabled'} aria-label="${esc(s.name)}本次试算人数"> 人</label></td></tr>`;
     }).join('')}</tbody></table></div><p id="optimizer-manual-error" class="field-error" role="status">${esc(optManualError)}</p><div class="optimizer-run"><button id="optimizer-manual-run" class="button" ${optBusy||optError||optResource==='shared'?'disabled':''}>比较手动方案</button><button id="optimizer-manual-reset" class="text-button">恢复当前方案的试算值</button></div><p class="section-note">编辑不等于应用。试算值必须在可用容量范围内，结果使用与自动比较相同的上限检查、完整预览和确认流程。</p></div></details>`;
   }
   function optComparison(after,before,stress=false){
@@ -90,7 +90,14 @@
     if($('#optimizer-cancel'))$('#optimizer-cancel').hidden=!optBusy;
     if($('#optimizer-progress'))$('#optimizer-progress').textContent=optNotice;
     if($('#optimizer-manual-error'))$('#optimizer-manual-error').textContent=optManualError;
-    if(checked?.result)renderResultOverview();updateTableHeads();updateBarHeight();
+    if(checked?.result){
+      for(const s of checked.config.stations){
+        const max=optOptions.capacityRanges.find(r=>r.inputIndex===s.inputIndex)?.max??s.cap;
+        const input=$(`[data-opt-target="${s.inputIndex}"]`),label=$(`[data-opt-manual-bound="${s.inputIndex}"]`);
+        if(input)input.max=String(max);if(label)label.textContent=`${s.cap} 人 / ${max} 人`;
+      }
+      renderResultOverview();
+    }updateTableHeads();updateBarHeight();
   }
   function optRead(){
     const next={...optOptions};
