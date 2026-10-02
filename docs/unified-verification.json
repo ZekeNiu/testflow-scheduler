@@ -1,0 +1,33 @@
+{
+  "sourceCommit": "16e15c1c66d15194f738c47e39a14b73b8220d36",
+  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36965440974",
+  "browserSuitePresent": false,
+  "checks": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":133,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":449}\n",
+      "stderr": ""
+    },
+    {
+      "command": "node tests/optimizer.cjs",
+      "exitCode": 0,
+      "stdout": "{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":1003}\n",
+      "stderr": ""
+    },
+    {
+      "command": "node tests/unified-optimizer.cjs",
+      "exitCode": 0,
+      "stdout": "{\"unifiedOptimizerChecks\":35,\"checks\":[\"Hand-calculated common bottleneck: 40 minutes unchanged singly, 20 jointly\",\"Resource permissions and zero station-change allowance\",\"Manual joint changes use the same metrics, limits and immutable baseline\",\"Single-person cumulative waiting differs from longest single-station waiting\",\"Duration stress compares both full plans under the same declared scenario\",\"Bounded sampling cannot claim exhaustive optimality; joint probes are retained\",\"Search range and maximum-count inputs are validated\",\"Negligible improvement does not become the default recommendation\",\"Impossible limits remain impossible for automatic and manual evaluation\",\"Independent capacity/organization Cartesian oracle 0\",\"Independent capacity/organization Cartesian oracle 1\",\"Independent capacity/organization Cartesian oracle 2\",\"Independent capacity/organization Cartesian oracle 3\",\"Independent capacity/organization Cartesian oracle 4\",\"Independent capacity/organization Cartesian oracle 5\",\"Independent capacity/organization Cartesian oracle 6\",\"Independent capacity/organization Cartesian oracle 7\",\"Independent capacity/organization Cartesian oracle 8\",\"Independent capacity/organization Cartesian oracle 9\",\"Independent capacity/organization Cartesian oracle 10\",\"Independent capacity/organization Cartesian oracle 11\",\"Independent capacity/organization Cartesian oracle 12\",\"Independent capacity/organization Cartesian oracle 13\",\"Independent capacity/organization Cartesian oracle 14\",\"Independent capacity/organization Cartesian oracle 15\",\"Independent capacity/organization Cartesian oracle 16\",\"Independent capacity/organization Cartesian oracle 17\",\"Independent capacity/organization Cartesian oracle 18\",\"Independent capacity/organization Cartesian oracle 19\",\"Independent capacity/organization Cartesian oracle 20\",\"Independent capacity/organization Cartesian oracle 21\",\"Independent capacity/organization Cartesian oracle 22\",\"Independent capacity/organization Cartesian oracle 23\",\"Asynchronous parity\",\"Cancellation does not certify partial comparisons\"]}\n",
+      "stderr": ""
+    },
+    {
+      "command": "python3 build.py",
+      "exitCode": 0,
+      "stdout": "Built index.html: 317053 bytes\n",
+      "stderr": ""
+    }
+  ],
+  "passed": true,
+  "browserVerified": false
+}
