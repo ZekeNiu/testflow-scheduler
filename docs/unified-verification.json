@@ -1,18 +1,18 @@
 {
-  "sourceCommit": "6b7e330176fb1413f68c0533799f3fc2af469040",
-  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36966101055",
-  "browserSuitePresent": false,
+  "sourceCommit": "2c4c19bc3055eaa491abd96b55a1162b3072c2cd",
+  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36966284487",
+  "browserSuitePresent": true,
   "checks": [
     {
       "command": "npm test",
       "exitCode": 0,
-      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":129,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":459}\n",
+      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":125,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":433}\n",
       "stderr": ""
     },
     {
       "command": "node tests/optimizer.cjs",
       "exitCode": 0,
-      "stdout": "{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":994}\n",
+      "stdout": "{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":999}\n",
       "stderr": ""
     },
     {
@@ -26,8 +26,14 @@
       "exitCode": 0,
       "stdout": "Built index.html: 336998 bytes\n",
       "stderr": ""
+    },
+    {
+      "command": "/tmp/testflow-browser/bin/python tests/unified-browser.py",
+      "exitCode": 1,
+      "stdout": "PASS: Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\nPASS: Default fixed-capacity worker comparison, complete metrics and no plan mutation\nPASS: Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\nPASS: Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\n{\"checksBeforeFailure\": [\"Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\", \"Default fixed-capacity worker comparison, complete metrics and no plan mutation\", \"Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\", \"Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\"], \"pageErrors\": []}\n",
+      "stderr": "Traceback (most recent call last):\n  File \"/home/runner/work/testflow-scheduler/testflow-scheduler/tests/unified-browser.py\", line 86, in <module>\n    expect(page.locator('[data-opt-target=\"0\"]')).to_have_attribute('max','2')\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 19408, in to_have_attribute\n    self._sync(\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 266, in to_have_attribute\n    await self._expect_impl(\n  File \"/tmp/testflow-browser/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 85, in _expect_impl\n    raise AssertionError(\nAssertionError: Locator expected to have attribute '2'\nActual value: 1 \nCall log:\n  - Expect \"to_have_attribute\" with timeout 5000ms\n  - waiting for locator(\"[data-opt-target=\\\"0\\\"]\")\n    9 × locator resolved to <input min=\"1\" max=\"1\" step=\"1\" value=\"1\" type=\"number\" data-opt-target=\"0\" aria-label=\"A本次试算人数\"/>\n      - unexpected value \"1\"\n\n"
     }
   ],
-  "passed": true,
+  "passed": false,
   "browserVerified": false
 }
