@@ -42,12 +42,6 @@ def confirm(page):
     expect(page.locator('#optimizer-confirm-apply')).to_be_disabled()
     page.locator('#optimizer-confirm-reviewed').check();page.locator('#optimizer-confirm-apply').click()
     expect(page.locator('#optimizer-confirm')).to_be_hidden()
-def preview_snapshot(page):
-    import base64, zlib
-    html=page.evaluate("""()=>{const doc=document.documentElement.cloneNode(true);doc.querySelectorAll('script').forEach(e=>e.remove());return '<!doctype html>'+doc.outerHTML;}""")
-    encoded=base64.b64encode(zlib.compress(html.encode('utf-8'),9)).decode('ascii')
-    Path('docs/unified-preview.b64').write_text('\n'.join(encoded[i:i+3000] for i in range(0,len(encoded),3000))+'\n',encoding='ascii')
-
 def assert_no_overflow(page):
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),page.evaluate('({width:innerWidth,scroll:document.documentElement.scrollWidth})')
 
@@ -67,7 +61,6 @@ with sync_playwright() as pw:
         assert saved(page)==initial and workers
         expect(page.locator('.optimizer-comparison').first.locator('tbody tr')).to_have_count(9)
         check('Default fixed-capacity worker comparison, complete metrics and no plan mutation')
-        preview_snapshot(page)
         option(page,'allowRotation',True);option(page,'allowArrival',True);generate(page)
         expect(page.locator('#optimizer-results')).to_contain_text('14 / 14');expect(page.locator('#optimizer-results')).to_contain_text('需要权衡')
         expected=page.evaluate("""()=>{const p=JSON.parse(localStorage.getItem('testflow-plan-v2')),o=JSON.parse(localStorage.getItem('testflow-optimizer-preferences-v2')).options;return TestFlowOptimizer.apply(p,TestFlowOptimizer.search(p,o).recommendation)}""")
@@ -162,7 +155,11 @@ with sync_playwright() as pw:
         if task.count():
             task.focus();page.keyboard.press('Enter');expect(page.locator('#snapshot-dialog')).to_be_visible();page.locator('[data-close="snapshot-dialog"]').click()
         check('All existing result views and keyboard station snapshots remain functional')
-        page.locator('#tab-optimizer').click();generate(page);page.evaluate('scrollTo(0,0)');page.screenshot(path=str(OUT/'optimizer-desktop.png'),full_page=True)
+        page.locator('#tab-optimizer').click();generate(page);page.evaluate('scrollTo(0,0)');page.wait_for_timeout(100)
+        header_boxes=page.evaluate('''()=>Array.from(document.querySelectorAll('.optimizer-panel .table-scroll.is-fitting table')).filter(t=>t.getBoundingClientRect().height>0).map(t=>({table:t.getBoundingClientRect().top,header:t.querySelector('th').getBoundingClientRect().top,headerEnd:t.querySelector('th').getBoundingClientRect().bottom,firstRow:t.querySelector('tbody tr').getBoundingClientRect().top}))''')
+        assert header_boxes and all(abs(x['table']-x['header'])<3 and x['firstRow']>=x['headerEnd']-2 for x in header_boxes),header_boxes
+        check('Fitting comparison tables keep the header above the first row without a nested-scroll offset')
+        page.screenshot(path=str(OUT/'optimizer-desktop.png'),full_page=True)
         assert_no_overflow(page)
         for width in [320,390,768,1024,1280]:
             mobile=attach(browser,width);mobile.locator('#tab-optimizer').click();generate(mobile);assert_no_overflow(mobile)

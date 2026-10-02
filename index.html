@@ -153,6 +153,10 @@ input,select{width:100%;min-width:0;min-height:36px;border:1px solid #ccddd2;bor
 @media(max-width:480px){.optimizer-limits{grid-template-columns:minmax(0,1fr)}.optimizer-heading,.results-heading{flex-wrap:wrap}.optimizer-run{align-items:flex-start}.optimizer-confirm{width:calc(100% - 20px);padding:14px}.optimizer-choices{grid-template-columns:minmax(0,1fr)}}
 @media print{.optimizer-settings,.optimizer-applicability,.optimizer-capacities,.optimizer-run,.optimizer-heading button,.results-heading>.button,#optimizer-manual,#optimizer-rules,.optimizer-choice,.optimizer-result button{display:none!important}.optimizer-confirm{display:none!important}}
 
+/* Fitting tables must not retain an overflow scroll container: it offsets sticky headers. */
+.optimizer-panel .table-scroll.is-fitting,.optimizer-confirm .table-scroll.is-fitting{overflow:visible}
+.optimizer-confirm .table-scroll.is-fitting th{top:0}
+
 </style>
 </head>
 <body>
