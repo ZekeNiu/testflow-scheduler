@@ -1,48 +1,64 @@
-/* Reuse the existing TestFlow surfaces, typography, controls and buttons. */
+/* The unified workspace uses the existing TestFlow design tokens and controls. */
 .optimizer-panel{padding:4px 0 12px;min-width:0;font-size:13px;line-height:1.85}
 .optimizer-panel h3{margin:0;font-size:16px;font-weight:600}
 .optimizer-panel h4{margin:0 0 8px;font-size:14px;font-weight:600}
 .optimizer-panel h4 small{font-weight:400;color:var(--muted);font-size:12px}
 .optimizer-panel p{margin:7px 0 12px;overflow-wrap:anywhere}
-.optimizer-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.optimizer-heading,.optimizer-result-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .optimizer-heading p{color:var(--muted);margin:4px 0}
-.optimizer-context{padding:12px 14px;background:var(--soft);border-radius:6px;color:var(--muted)}
-.optimizer-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin:18px 0}
-.optimizer-scope{margin-top:18px}
-.optimizer-check{display:flex;align-items:flex-start;gap:9px;margin:12px 0;cursor:pointer}
+.optimizer-context{padding:14px 16px;background:var(--soft);border-radius:7px;color:var(--muted);margin:18px 0}
+.optimizer-context strong{display:block;color:var(--ink);font-weight:500}.optimizer-context span,.optimizer-context small{display:block;margin-top:4px}
+.optimizer-context small{font-size:12px}
+.optimizer-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;margin:22px 0}
+.optimizer-settings>section{min-width:0}
+.optimizer-check{display:flex;align-items:flex-start;gap:9px;margin:14px 0;cursor:pointer}
 .optimizer-check input{flex:none;margin-top:5px;width:16px;height:16px;accent-color:var(--green)}
 .optimizer-check strong{display:block;font-weight:500;font-size:13px}
-.optimizer-check small{display:block;color:var(--muted);line-height:1.7;font-size:12px;margin-top:3px}
-.optimizer-limits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.optimizer-check small{display:block;color:var(--muted);line-height:1.75;font-size:12px;margin-top:3px}
+.optimizer-limits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .optimizer-field{min-width:0}.optimizer-field input{min-width:0;width:100%}
-.optimizer-rules{margin:16px 0;border:1px solid #dbe5de;border-radius:6px;padding:10px 14px;background:var(--soft);color:var(--muted)}
-.optimizer-rules summary,.optimizer-all summary{cursor:pointer;color:var(--green);font-weight:500}
-.optimizer-rules .optimizer-limits{grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0}
-.optimizer-run{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:16px 0}
-#optimizer-progress{font-size:12px;color:var(--muted)}
-#optimizer-error{display:block;min-height:0}
-.optimizer-empty{padding:24px 18px;text-align:center;border:1px dashed #dbe5de;border-radius:7px;color:var(--muted);margin:16px 0}
+.optimizer-disclosure{margin:16px 0;border:1px solid #dbe5de;border-radius:7px;padding:12px 14px;min-width:0}
+.optimizer-disclosure>summary{cursor:pointer;color:var(--green);font-weight:500;overflow-wrap:anywhere;line-height:1.8}
+.optimizer-disclosure-body{padding-top:10px;min-width:0}.optimizer-disclosure .optimizer-limits{margin:14px 0}
+.optimizer-disclosure.compact{padding:10px 12px;margin-bottom:0;background:var(--soft)}
+.optimizer-capacities{border-top:1px solid #dbe5de;padding:20px 0 4px;margin:8px 0;min-width:0}
+.optimizer-capacity-table{width:100%;min-width:620px}.optimizer-capacity-table td:first-child{white-space:normal;min-width:140px;max-width:230px;overflow-wrap:anywhere}
+.optimizer-capacity-table td:nth-child(2){white-space:normal;max-width:230px}
+.optimizer-capacity-table input{width:92px;min-width:0}
+.optimizer-capacity-limit{max-width:300px;margin:16px 0}
+.optimizer-applicability{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,2fr);align-items:center;gap:20px;padding:16px;background:var(--soft);border-radius:7px;margin:18px 0}
+.optimizer-applicability .section-note{margin:0}
+.optimizer-run{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:18px 0}
+.optimizer-run .button{max-width:100%;white-space:normal}
+#optimizer-progress{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+#optimizer-error,#optimizer-manual-error,#optimizer-stress-error{display:block;min-height:0;overflow-wrap:anywhere}
+.optimizer-empty{padding:24px 18px;text-align:center;border:1px dashed #dbe5de;border-radius:7px;color:var(--muted);margin:20px 0}
 .optimizer-empty h4{color:var(--ink)}
-.optimizer-result{border-top:1px solid #dbe5de;margin-top:20px;padding-top:18px;scroll-margin-top:180px}
-.optimizer-recommendation,.optimizer-benchmark-note{padding:12px 14px;border-radius:6px;background:var(--soft)}
-.optimizer-benchmark-note{color:var(--muted)}
-.optimizer-comparison{min-width:640px;width:100%;margin-bottom:14px}
-.optimizer-comparison td:first-child{white-space:normal;min-width:150px}
+.optimizer-result{border-top:1px solid #dbe5de;margin-top:24px;padding-top:22px;scroll-margin-top:150px;min-width:0}
+.optimizer-source{font-size:12px;color:var(--muted);font-weight:400}
+.optimizer-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:18px 0}
+.optimizer-choice{font:inherit;color:var(--ink);text-align:left;background:#fff;border:1px solid #dbe5de;border-radius:7px;padding:14px;cursor:pointer;min-width:0;line-height:1.8}
+.optimizer-choice:hover{border-color:var(--green)}.optimizer-choice.is-selected{border-color:var(--green);background:var(--soft)}
+.optimizer-choice:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.optimizer-choice strong{font-weight:500;display:block}.optimizer-choice span,.optimizer-choice small{display:block;margin-top:6px;overflow-wrap:anywhere}
+.optimizer-choice small{font-size:12px;color:var(--muted)}
+.optimizer-recommendation,.optimizer-benchmark-note{padding:14px 16px;border-radius:7px;background:var(--soft);margin:18px 0}
+.optimizer-recommendation>strong{font-weight:600}.optimizer-recommendation>span{font-size:12px;color:var(--muted)}
+.optimizer-recommendation p{margin:6px 0}.optimizer-benchmark-note{color:var(--muted)}
+.optimizer-comparison{min-width:780px;width:100%;margin-bottom:10px}
+.optimizer-comparison td:first-child{white-space:normal;min-width:165px;max-width:210px}
+.optimizer-comparison td:last-child{white-space:normal;min-width:145px}
 .optimizer-tradeoff{color:#95532b}
-.optimizer-all{margin:18px 0}.optimizer-all .table-scroll{margin-top:10px}
-.optimizer-all-table{min-width:1000px}
-.optimizer-all-table td:first-child{min-width:190px;white-space:normal;max-width:260px}
-.optimizer-all-table td:last-child{max-width:230px;white-space:normal}
-.optimizer-all-table .text-button{display:block;margin-top:6px}
-.optimizer-health{display:flex;gap:8px 16px;justify-content:space-between;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px;line-height:1.8;margin:0 0 14px}
-.optimizer-confirm{max-width:620px;width:calc(100% - 32px);border:1px solid #dbe5de;border-radius:12px;padding:24px;color:var(--ink);box-shadow:0 18px 55px #10251d30}
-.optimizer-confirm::backdrop{background:#182f294d}
-.optimizer-confirm p{font-size:14px;line-height:1.9;margin:14px 0}
-.optimizer-confirm h2{font-size:18px;margin:0}
-.optimizer-confirm .dialog-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.optimizer-all-table{min-width:1000px;width:100%;margin-top:12px}
+.optimizer-all-table td:first-child{min-width:240px;white-space:normal;max-width:310px;overflow-wrap:anywhere}
+.optimizer-all-table td:last-child{max-width:240px;white-space:normal}.optimizer-all-table .text-button{display:block;margin-top:8px}
+.optimizer-stress-input{width:190px;max-width:100%}.optimizer-stress-input input{width:100%;min-width:0}
+.optimizer-confirm{max-width:920px;width:calc(100% - 32px);max-height:calc(100dvh - 48px);overflow:auto;border:1px solid #dbe5de;border-radius:12px;padding:24px;color:var(--ink);box-shadow:0 18px 55px #10251d30}
+.optimizer-confirm::backdrop{background:#182f294d}.optimizer-confirm p{font-size:14px;line-height:1.9;margin:14px 0}
+.optimizer-confirm h2{font-size:18px;margin:0}.optimizer-confirm .dialog-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .results-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.results-heading>.button{flex-shrink:0}
-.optimizer-scroll-hint{display:none;color:var(--muted);font-size:12px}
-@media(max-width:900px){.optimizer-settings{grid-template-columns:minmax(0,1fr);gap:14px}.optimizer-rules .optimizer-limits{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.optimizer-scroll-hint{display:block}}
-@media(max-width:480px){.optimizer-limits,.optimizer-rules .optimizer-limits{grid-template-columns:minmax(0,1fr)}.optimizer-heading{flex-wrap:wrap}.optimizer-confirm{padding:18px}.optimizer-health{display:block}.optimizer-health .text-button{display:block;margin-top:7px}.results-heading{flex-wrap:wrap}.optimizer-run{align-items:flex-start}}
-@media print{.optimizer-settings,.optimizer-run,.optimizer-rules,.optimizer-result button,.optimizer-heading button,.optimizer-health button,.results-heading>.button,.optimizer-scroll-hint{display:none!important}.optimizer-result{break-inside:avoid}}
+.optimizer-panel .table-scroll,.optimizer-confirm .table-scroll{max-width:100%;overflow-x:auto}
+@media(max-width:1200px){.optimizer-settings{grid-template-columns:minmax(0,1fr);gap:20px}}
+@media(max-width:760px){.optimizer-applicability{grid-template-columns:minmax(0,1fr);gap:10px}.optimizer-context{padding:12px}.optimizer-disclosure{padding:11px}.optimizer-confirm{padding:18px}}
+@media(max-width:480px){.optimizer-limits{grid-template-columns:minmax(0,1fr)}.optimizer-heading,.results-heading{flex-wrap:wrap}.optimizer-run{align-items:flex-start}.optimizer-confirm{width:calc(100% - 20px);padding:14px}.optimizer-choices{grid-template-columns:minmax(0,1fr)}}
+@media print{.optimizer-settings,.optimizer-applicability,.optimizer-capacities,.optimizer-run,.optimizer-heading button,.results-heading>.button,#optimizer-manual,#optimizer-rules,.optimizer-choice,.optimizer-result button{display:none!important}.optimizer-confirm{display:none!important}}
