@@ -1,0 +1,83 @@
+{
+  "sourceCommit": "48de76d0c46bb637fb251b5a6ee0c6424cb18847",
+  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36971145795",
+  "checks": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":83,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":344}\n",
+      "stderr": ""
+    },
+    {
+      "command": "node tests/optimizer.cjs",
+      "exitCode": 0,
+      "stdout": "{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":788}\n",
+      "stderr": ""
+    },
+    {
+      "command": "node tests/unified-optimizer.cjs",
+      "exitCode": 0,
+      "stdout": "{\"unifiedOptimizerChecks\":35,\"checks\":[\"Hand-calculated common bottleneck: 40 minutes unchanged singly, 20 jointly\",\"Resource permissions and zero station-change allowance\",\"Manual joint changes use the same metrics, limits and immutable baseline\",\"Single-person cumulative waiting differs from longest single-station waiting\",\"Duration stress compares both full plans under the same declared scenario\",\"Bounded sampling cannot claim exhaustive optimality; joint probes are retained\",\"Search range and maximum-count inputs are validated\",\"Negligible improvement does not become the default recommendation\",\"Impossible limits remain impossible for automatic and manual evaluation\",\"Independent capacity/organization Cartesian oracle 0\",\"Independent capacity/organization Cartesian oracle 1\",\"Independent capacity/organization Cartesian oracle 2\",\"Independent capacity/organization Cartesian oracle 3\",\"Independent capacity/organization Cartesian oracle 4\",\"Independent capacity/organization Cartesian oracle 5\",\"Independent capacity/organization Cartesian oracle 6\",\"Independent capacity/organization Cartesian oracle 7\",\"Independent capacity/organization Cartesian oracle 8\",\"Independent capacity/organization Cartesian oracle 9\",\"Independent capacity/organization Cartesian oracle 10\",\"Independent capacity/organization Cartesian oracle 11\",\"Independent capacity/organization Cartesian oracle 12\",\"Independent capacity/organization Cartesian oracle 13\",\"Independent capacity/organization Cartesian oracle 14\",\"Independent capacity/organization Cartesian oracle 15\",\"Independent capacity/organization Cartesian oracle 16\",\"Independent capacity/organization Cartesian oracle 17\",\"Independent capacity/organization Cartesian oracle 18\",\"Independent capacity/organization Cartesian oracle 19\",\"Independent capacity/organization Cartesian oracle 20\",\"Independent capacity/organization Cartesian oracle 21\",\"Independent capacity/organization Cartesian oracle 22\",\"Independent capacity/organization Cartesian oracle 23\",\"Asynchronous parity\",\"Cancellation does not certify partial comparisons\"]}\n",
+      "stderr": ""
+    },
+    {
+      "command": "node tests/auto-advice.cjs",
+      "exitCode": 0,
+      "stdout": "{\"autoAdviceControllerChecks\":24}\n",
+      "stderr": ""
+    },
+    {
+      "command": "python3 build.py",
+      "exitCode": 0,
+      "stdout": "Built index.html: 358354 bytes\n",
+      "stderr": ""
+    },
+    {
+      "command": "/tmp/testflow-browser/bin/python tests/unified-browser.py",
+      "exitCode": 0,
+      "stdout": "PASS: Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\nPASS: Default fixed-capacity worker comparison, complete metrics and no plan mutation\nPASS: Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\nPASS: Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\nPASS: Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions\nPASS: Invalid manual drafts persist across views and cannot exceed available resources\nPASS: Duration scenario compares both plans, invalidates edited results and never changes nominal parameters\nPASS: Known shared resources block unsupported recommendations rather than implying feasibility\nPASS: Bounded-search honesty and persistent invalid preference drafts\nPASS: Actual plan edits invalidate results and reset index-scoped resource bounds\nPASS: Undo cannot overwrite subsequent actual plan edits\nPASS: Single advisory dismissal survives preferences, trials, tab changes and real localStorage reload\nPASS: Overall-rest semantics remain protected across organizational alternatives\nPASS: Large calculations remain cancellable without stale result application\nPASS: JSON save, complete CSV export and styled four-sheet XLSX export are preserved\nPASS: All existing result views and keyboard station snapshots remain functional\nPASS: Fitting comparison tables keep the header above the first row without a nested-scroll offset\nPASS: Automatic/manual/confirmation layout without page overflow at 320px\nPASS: Automatic/manual/confirmation layout without page overflow at 390px\nPASS: Automatic/manual/confirmation layout without page overflow at 768px\nPASS: Automatic/manual/confirmation layout without page overflow at 1024px\nPASS: Automatic/manual/confirmation layout without page overflow at 1280px\nPASS: No-worker fallback and unavailable-storage operation remain usable\nPASS: Keyboard dismissal restores focus; view preferences and invalid repair preserve it, valid changes reset it\nPASS: Escaped station names, disabled indices, atomic targeting and batch-versus-workstation wording\nPASS: Old optimization preferences migrate read-only without changing legacy keys or the saved plan\nPASS: Browser restart with the same real disk profile preserves plan, metrics, dismissal and optimizer preferences\n{\"unifiedBrowserChecks\": 27, \"storageMode\": \"real\", \"checks\": [\"Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\", \"Default fixed-capacity worker comparison, complete metrics and no plan mutation\", \"Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\", \"Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\", \"Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions\", \"Invalid manual drafts persist across views and cannot exceed available resources\", \"Duration scenario compares both plans, invalidates edited results and never changes nominal parameters\", \"Known shared resources block unsupported recommendations rather than implying feasibility\", \"Bounded-search honesty and persistent invalid preference drafts\", \"Actual plan edits invalidate results and reset index-scoped resource bounds\", \"Undo cannot overwrite subsequent actual plan edits\", \"Single advisory dismissal survives preferences, trials, tab changes and real localStorage reload\", \"Overall-rest semantics remain protected across organizational alternatives\", \"Large calculations remain cancellable without stale result application\", \"JSON save, complete CSV export and styled four-sheet XLSX export are preserved\", \"All existing result views and keyboard station snapshots remain functional\", \"Fitting comparison tables keep the header above the first row without a nested-scroll offset\", \"Automatic/manual/confirmation layout without page overflow at 320px\", \"Automatic/manual/confirmation layout without page overflow at 390px\", \"Automatic/manual/confirmation layout without page overflow at 768px\", \"Automatic/manual/confirmation layout without page overflow at 1024px\", \"Automatic/manual/confirmation layout without page overflow at 1280px\", \"No-worker fallback and unavailable-storage operation remain usable\", \"Keyboard dismissal restores focus; view preferences and invalid repair preserve it, valid changes reset it\", \"Escaped station names, disabled indices, atomic targeting and batch-versus-workstation wording\", \"Old optimization preferences migrate read-only without changing legacy keys or the saved plan\", \"Browser restart with the same real disk profile preserves plan, metrics, dismissal and optimizer preferences\"], \"pageErrors\": []}\n",
+      "stderr": ""
+    },
+    {
+      "command": "/tmp/testflow-browser/bin/python tests/auto-advice-browser.py",
+      "exitCode": 0,
+      "stdout": "PASS: Opening a valid plan automatically analyzes it without visiting the optimizer or expanding permissions\nPASS: No-change verdict and concrete hypothetical capacity opportunity are shown directly without unsafe application\nPASS: Detail page, views, zoom, metric choices and resize reuse the completed analysis without recalculation\nPASS: Concrete savings and direct preview/confirmation work from the results page; application and full undo remain explicit\nPASS: Rapid input is debounced into one analysis of the final plan without moving keyboard focus\nPASS: Invalid plan input removes stale actionable advice; repairing it automatically resumes analysis\nPASS: Goal and acceptable-limit edits automatically refresh both the summary and detailed result\nPASS: Automatic completion does not reset manual drafts, steal focus, overwrite manual results or apply trial parameters\nPASS: Known shared resources stop unsupported automatic recommendations; valid resource changes resume analysis\nPASS: Invalid optimization drafts cannot expose old advice and recover automatically when corrected\nPASS: Dismissal survives automatic results, preference changes and reload; only actual plan changes reset it\nPASS: Large automatic analyses can be paused; views do not restart them, and subsequent plan edits do\nPASS: Automatic analysis works when Worker is unavailable or construction fails\nPASS: Advice and direct confirmation retain responsive layouts at 320, 390, 768 and 1280 pixels\n{\"automaticAdviceBrowserChecks\": 14, \"checks\": [\"Opening a valid plan automatically analyzes it without visiting the optimizer or expanding permissions\", \"No-change verdict and concrete hypothetical capacity opportunity are shown directly without unsafe application\", \"Detail page, views, zoom, metric choices and resize reuse the completed analysis without recalculation\", \"Concrete savings and direct preview/confirmation work from the results page; application and full undo remain explicit\", \"Rapid input is debounced into one analysis of the final plan without moving keyboard focus\", \"Invalid plan input removes stale actionable advice; repairing it automatically resumes analysis\", \"Goal and acceptable-limit edits automatically refresh both the summary and detailed result\", \"Automatic completion does not reset manual drafts, steal focus, overwrite manual results or apply trial parameters\", \"Known shared resources stop unsupported automatic recommendations; valid resource changes resume analysis\", \"Invalid optimization drafts cannot expose old advice and recover automatically when corrected\", \"Dismissal survives automatic results, preference changes and reload; only actual plan changes reset it\", \"Large automatic analyses can be paused; views do not restart them, and subsequent plan edits do\", \"Automatic analysis works when Worker is unavailable or construction fails\", \"Advice and direct confirmation retain responsive layouts at 320, 390, 768 and 1280 pixels\"], \"pageErrors\": []}\n",
+      "stderr": ""
+    }
+  ],
+  "passed": true,
+  "autoBrowserPresent": true,
+  "sha256": {
+    "src/head.html": "b54d55844f2b615ba0b6c6824ba00d410a1e1772e54b9726b3f6df17f36aad22",
+    "src/testflow-auto-advice-ui.js": "e95150c0678724833a7185df7974e03c30fbd8151ca889e6d9ad1251ac9bf063",
+    "src/testflow-auto-advice.css": "c10c1ad8e1eb17fd82fe2b16cefdb080d4707f1cf70331c61bbc5051520afa7b",
+    "src/testflow-auto-advice.js": "799b58db318498ef594c16ad899cf9dca62fe00d2497c67c94af9b368830291f",
+    "src/testflow-body.html": "989357aa6cf5fc488225e44af7e3b8ec49df86c4bcdc609997facf9555242880",
+    "src/testflow-capacity-ui.js": "bafff0b34d1bd91f800a536d2f3645c2f45643680ed4d45f3408d97f32d70d28",
+    "src/testflow-capacity.css": "3b8c7315a61cc9c50673b8ed3b8e630062ea73ff0f93faf82b16631b72c824bb",
+    "src/testflow-diagnostics.js": "6da7b45f0dcbdbfbd221d36f18a9cde2238b65e045a3c12fce80ddfbc88f6de7",
+    "src/testflow-engine.js": "d6268c1be3df27b3a5b0b014a2f099408bded5636cd5a92907d0d46513e6ca1d",
+    "src/testflow-export.js": "e714e4430d5105afffa43580e50a69dbfa9f93a8f84b9a9b0083fa779d79c5c0",
+    "src/testflow-optimizer-ui.js": "db534dda9e1515eac37127ba211819eea2115d941d2efa4bbab099d1ccb8943e",
+    "src/testflow-optimizer.css": "532289a4fdbb6c89f28a80dde906b87900bac9311958387e20d9415acb3356cf",
+    "src/testflow-optimizer.js": "2385eaf4b2c4b1480b86263020b58cbaee5259a198c5f8ba27270301776352a5",
+    "src/testflow-persistence.js": "f7c24a1fac12e3bed60338ffec37a7fc690c5bd7c83afce5ce76cf8c0fd664c5",
+    "src/testflow-ui.js": "67ac43b81b1b2307ecf36fa3af5d82a5d9b96a69e24c5bc523d1c633eef7830e",
+    "src/testflow-xlsx-template.js": "578dd2de756875155e7bfc5571e61eb0a408cf610374247569802eb5461055a7",
+    "src/testflow.css": "9168854c13751f280202b3c7ea7744c92d586993f9504626ee5899c96ad4d2b7",
+    "tests/arrivals.cjs": "b7b5963cc49ea79263b291a79b82eef7950b8de5d68c29cd0ba7a7b42b558d17",
+    "tests/auto-advice-browser.py": "fff5b7094c3dc67a52fa23642f4b8143ab61347cc3c04fd9bca8bdec6aec6b51",
+    "tests/auto-advice.cjs": "c020832787ce989c4212f739ab8187994ffcff5241f26c23467b3093828838f5",
+    "tests/capacity-browser.py": "7ede46e9d5726591e24a997b9f172981d9991d3d7626e6647d53df01272f7387",
+    "tests/capacity-diagnostics.cjs": "c0e8077951dfff893448e01de814bcdeaf51fb4ad41a89a4c994cfc9a0ee9894",
+    "tests/capacity-preferences.py": "062dd1f73b37099241b784b044b0802021cbe2d8617bb41cf57932508fa913f8",
+    "tests/optimizer-browser.py": "f4bd38416570e0a6d3738ed7319562ce0e1fb56aa7b0ac132fd89d1439bc1659",
+    "tests/optimizer.cjs": "38360c8e7bf4dfc2f07c56bac1753e4888246a6176e8f11dee41731a91dda9b4",
+    "tests/snapshot.cjs": "aad647d32080fe8f1d39ca99c8e398a2515c0ffff00142903cff28dce1e9318b",
+    "tests/unified-browser.py": "f0f6336313ac4e021324d17694e204f3a3090a91ba481251ee9b903afd3921fe",
+    "tests/unified-optimizer.cjs": "3cf8402547c214133828261d064538bc491f614ef4bb0c9d63ccff9af426df71",
+    "tests/waiting.cjs": "d5e8955b327aeb1ad26319b2b0b914e3a6785b533f91878700910375890e6bda",
+    "build.py": "01546271873fcc80673a728d2a2c9fefbbb50956f83e967664336a380227cef7",
+    "index.html": "649f3fa1cf8dd182758ce06348f5be8d51435c92b67f53c5a9d1c7c239a90520"
+  }
+}

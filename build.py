@@ -3,7 +3,7 @@ import json
 
 root = Path(__file__).resolve().parent
 source = root / 'src'
-scripts = ['testflow-engine.js', 'testflow-diagnostics.js', 'testflow-optimizer.js', 'testflow-xlsx-template.js', 'testflow-export.js', 'testflow-ui.js']
+scripts = ['testflow-engine.js', 'testflow-diagnostics.js', 'testflow-optimizer.js', 'testflow-auto-advice.js', 'testflow-xlsx-template.js', 'testflow-export.js', 'testflow-ui.js']
 
 
 def script_text(file):
@@ -12,7 +12,7 @@ def script_text(file):
         anchor = '  renderStations();renderBreaks();syncControls();recalculate();setSidebar(sidebarOpen);'
         if text.count(anchor) != 1:
             raise RuntimeError('Unable to locate unique TestFlow UI initialization anchor')
-        extension = '\n'.join((source / name).read_text(encoding='utf-8').rstrip() for name in ['testflow-capacity-ui.js', 'testflow-optimizer-ui.js'])
+        extension = '\n'.join((source / name).read_text(encoding='utf-8').rstrip() for name in ['testflow-capacity-ui.js', 'testflow-optimizer-ui.js', 'testflow-auto-advice-ui.js'])
         text = text.replace(anchor, extension + '\n' + anchor, 1)
         patch = (source / 'testflow-persistence.js').read_text(encoding='utf-8').rstrip()
         marker = '\n})();'
@@ -24,8 +24,8 @@ def script_text(file):
 
 
 html = (source / 'head.html').read_text(encoding='utf-8')
-html += '\n<meta name="testflow-release" content="unified-optimizer-20261002">\n'
-css = '\n'.join((source / name).read_text(encoding='utf-8') for name in ['testflow.css', 'testflow-capacity.css', 'testflow-optimizer.css'])
+html += '\n<meta name="testflow-release" content="automatic-advice-20261002">\n'
+css = '\n'.join((source / name).read_text(encoding='utf-8') for name in ['testflow.css', 'testflow-capacity.css', 'testflow-optimizer.css', 'testflow-auto-advice.css'])
 html += '<style>\n' + css + '\n</style>\n</head>\n<body>\n'
 html += (source / 'testflow-body.html').read_text(encoding='utf-8')
 # Inline worker source keeps all computation available in the single offline HTML.

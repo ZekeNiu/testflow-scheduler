@@ -8,7 +8,7 @@
   <title>测试排程与耗时计算器 · TestFlow</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%23176b50'/%3E%3Cpath d='M10 12h20M10 20h20M10 28h20' stroke='white' stroke-width='2'/%3E%3Ccircle cx='17' cy='12' r='3' fill='%23176b50' stroke='white' stroke-width='2'/%3E%3Ccircle cx='24' cy='20' r='3' fill='%23176b50' stroke='white' stroke-width='2'/%3E%3Ccircle cx='14' cy='28' r='3' fill='%23176b50' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
   
-<meta name="testflow-release" content="unified-optimizer-20261002">
+<meta name="testflow-release" content="automatic-advice-20261002">
 <style>
 :root{--ink:#193a30;--muted:#647b70;--green:#176b50;--dark:#104d39;--line:#dce6df;--soft:#f3f7f4;--canvas:#f7f8f7;--shadow:0 3px 16px #19382e0b,0 1px 3px #19382e05;--shadow-soft:0 2px 9px #19382e08;--red:#a13f37;--amber:#916323;--bar-height:76px;--tabs-height:45px;font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;font-size:15px;color-scheme:light}
 *{box-sizing:border-box}html{scroll-padding-top:calc(var(--bar-height) + 20px)}body{margin:0;background:var(--canvas);color:var(--ink);line-height:1.55}h1,h2,h3,p{margin:0}button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{cursor:not-allowed;opacity:.35}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #4b9d7c;outline-offset:3px}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.skip-link{position:fixed;z-index:100;left:12px;top:-60px;padding:10px;background:#fff;color:var(--green)}.skip-link:focus{top:10px}
@@ -156,6 +156,22 @@ input,select{width:100%;min-width:0;min-height:36px;border:1px solid #ccddd2;bor
 /* Fitting tables must not retain an overflow scroll container: it offsets sticky headers. */
 .optimizer-panel .table-scroll.is-fitting,.optimizer-confirm .table-scroll.is-fitting{overflow:visible}
 .optimizer-confirm .table-scroll.is-fitting th{top:0}
+
+/* Keep the existing advisory surface and palette; only its content becomes actionable. */
+#capacity-hint{display:block}
+.auto-advice-body{min-width:0;font-size:13px;line-height:1.8}
+.auto-advice-body p{margin:8px 0;overflow-wrap:anywhere}
+.auto-advice-headline{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.auto-advice-headline>strong{font-size:14px;font-weight:600;color:var(--ink)}
+#auto-advice-status,.auto-advice-scope,.auto-advice-limit{font-size:12px;color:var(--muted)}
+.auto-advice-limit.optimizer-tradeoff{color:#95532b}
+.auto-advice-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:12px}
+.auto-advice-actions .button{max-width:100%;white-space:normal}
+.auto-advice-reference{border-top:1px solid #dbe5de;margin-top:14px;padding-top:6px}
+.auto-advice-reference small{display:block;font-size:12px;color:var(--muted);line-height:1.75}
+.auto-advice-reference .text-button{margin-top:6px}
+@media(max-width:480px){.auto-advice-actions{align-items:flex-start}.auto-advice-actions .button{width:100%}}
+@media print{.auto-advice-actions,.auto-advice-reference button{display:none!important}}
 
 </style>
 </head>
@@ -695,6 +711,66 @@ input,select{width:100%;min-width:0;min-height:36px;border:1px solid #ccddd2;bor
     return {active:!accepted&&(breaches.length>0||findings.length>0||!!organization),accepted,hasLimits,breaches,findings,organization,validReport,metrics:m};
   }
   const api={defaults,goals,limits,options,signature,metrics,violations,enumerate,evaluate,compare,finish,search,searchAsync,significant,assess,apply,manual,stress};root.TestFlowOptimizer=api;
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(globalThis);
+
+</script>
+
+<script>
+/* Debounced, cancel-safe analysis orchestration. It never edits a test plan. */
+(function(root){
+  'use strict';
+  function create({run,onChange=()=>{},onResult=()=>{},delay=450,cacheSize=4,setTimer=setTimeout,clearTimer=clearTimeout}){
+    if(typeof run!=='function')throw new TypeError('run must be a function');
+    let revision=0,timer=null,abort=null,request=null,holding=false,disposed=false;
+    let state={status:'idle',key:null,report:null,done:0,total:0,error:''};
+    const cache=new Map();
+    const emit=patch=>{state={...state,...patch};onChange({...state});};
+    function cancel(){revision++;if(timer!==null){clearTimer(timer);timer=null;}if(abort){const stop=abort;abort=null;stop();}}
+    function remember(key,report){cache.delete(key);cache.set(key,report);while(cache.size>cacheSize)cache.delete(cache.keys().next().value);}
+    function publish(key,report,fromCache=false){
+      state={status:'ready',key,report,done:report.tested??0,total:report.plans?.length??0,error:'',fromCache};
+      onResult(report,key);onChange({...state});
+    }
+    function start(){
+      timer=null;if(disposed||holding||!request)return;
+      const job=request,token=revision;emit({status:'running',done:0,total:0});
+      const control={cancelled:()=>disposed||token!==revision,onCancel:fn=>{if(token!==revision)fn();else abort=fn;},progress:(done,total)=>{if(token===revision&&!disposed)emit({done,total});}};
+      Promise.resolve().then(()=>{if(control.cancelled())return null;return run(job,control);}).then(report=>{
+        if(disposed||token!==revision||!report)return;
+        abort=null;
+        if(report.finished&&!report.failed)remember(job.key,report);
+        publish(job.key,report);
+      }).catch(error=>{if(!disposed&&token===revision){abort=null;emit({status:'error',report:null,error:String(error?.message||error)});}});
+    }
+    function queue(force=false){
+      if(!request||disposed)return;
+      if(!force&&cache.has(request.key)){const report=cache.get(request.key);remember(request.key,report);publish(request.key,report,true);return;}
+      emit({status:holding?'deferred':'pending',key:request.key,report:null,done:0,total:0,error:'',fromCache:false});
+      if(!holding)timer=setTimer(start,force?0:delay);
+    }
+    function sync(next){
+      if(disposed)return;
+      if(!next){invalidate();return;}
+      if(next.key===request?.key)return;
+      cancel();request=structuredClone(next);queue();
+    }
+    function invalidate(){
+      if(disposed)return;
+      if(!request&&state.status==='idle')return;
+      cancel();request=null;emit({status:'idle',key:null,report:null,done:0,total:0,error:'',fromCache:false});
+    }
+    function refresh(next=request){if(disposed||!next)return;cancel();request=structuredClone(next);cache.delete(next.key);queue(true);}
+    function pause(){if(disposed||!request)return;cancel();emit({status:'paused',report:null,done:0,total:0,error:''});}
+    function suspend(){
+      if(disposed)return;holding=true;
+      if(['pending','running'].includes(state.status)){cancel();emit({status:'deferred',report:null,done:0,total:0});}
+    }
+    function resume(){if(disposed)return;holding=false;if(state.status==='deferred')queue();}
+    function dispose(){cancel();disposed=true;request=null;cache.clear();}
+    return {sync,refresh,invalidate,pause,suspend,resume,dispose,getState:()=>({...state})};
+  }
+  const api={create};root.TestFlowAutoAdvice=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);
 
@@ -1862,6 +1938,180 @@ globalThis.TestFlowWorkbookTemplate={"parts":{"xl/workbook.xml":"<?xml version=\
       const undo=optUndo;optUndo=null;optInvalidate('已撤回本次完整方案调整。');usePlan(undo.before);optResource=undo.resource;optNotice='已恢复应用前的完整方案。';optSave();renderSchedule();toast('已恢复应用前的完整方案。');
     }
   });
+  // Automatic advice is available on every results view; the optimizer is its detail editor.
+  let autoInputPending=false,autoManualPriority=0,autoLastMarkup='';
+  const autoSnapshot=()=>{
+    if(autoInputPending||!checked?.result||optError||optResource==='shared')return null;
+    const signature=optSignature();
+    if(!signature||signature!==JSON.stringify(checked.config))return null;
+    return {key:JSON.stringify([signature,optOptions,optResource]),signature,raw:structuredClone(state),options:structuredClone(optOptions)};
+  };
+  function autoCompute(request,control){
+    const fallback=()=>O.searchAsync(request.raw,request.options,{cancelled:control.cancelled,progress:control.progress});
+    const source=$('#testflow-optimizer-worker');
+    if(typeof Worker==='undefined'||!source)return fallback();
+    return new Promise((resolve,reject)=>{
+      let worker,url,settled=false;
+      const cleanup=()=>{worker?.terminate();if(url)URL.revokeObjectURL(url);};
+      const finish=(fn,value)=>{if(settled)return;settled=true;cleanup();fn(value);};
+      const useFallback=()=>{if(settled)return;settled=true;cleanup();if(control.cancelled()){resolve(null);return;}fallback().then(resolve,reject);};
+      try{
+        url=URL.createObjectURL(new Blob([JSON.parse(source.textContent)],{type:'text/javascript'}));worker=new Worker(url);
+        control.onCancel(()=>finish(resolve,null));
+        if(control.cancelled()){finish(resolve,null);return;}
+        worker.onmessage=e=>{
+          if(e.data.type==='progress'){if(!settled)control.progress(e.data.done,e.data.total);return;}
+          if(e.data.type==='result')finish(resolve,e.data.result);
+          else finish(reject,new Error(e.data.message||'方案分析未完成。'));
+        };
+        worker.onerror=useFallback;
+        worker.postMessage({action:'search',raw:request.raw,options:request.options});
+      }catch{useFallback();}
+    });
+  }
+  function autoStateText(s){
+    if(optResource==='shared')return '存在跨站共享资源，本模型暂不能验证其占用冲突。';
+    if(optError)return '请修正优化条件，修正后会自动重新分析。';
+    if(autoInputPending)return '参数正在更新，停止输入后自动分析。';
+    if(s.status==='pending')return '方案已更新，正在准备自动分析。';
+    if(s.status==='running')return s.total?`正在自动比较方案：${s.done} / ${s.total} 个配置。`:'正在自动比较允许范围内的方案。';
+    if(s.status==='deferred')return '优先完成手动试算；随后更新自动分析。';
+    if(s.status==='paused')return '已停止本次自动分析；修改方案后会重新分析，也可立即继续。';
+    if(s.status==='error')return '自动分析未完成：'+s.error;
+    if(s.status==='ready')return `自动分析完成：已比较 ${s.report.tested} 个配置，当前方案未被自动修改。`;
+    return '有效方案设置完成后会自动分析，无需先打开“方案优化”。';
+  }
+  function autoShowResult(report,key){
+    const snapshot=autoSnapshot();if(!snapshot||snapshot.key!==key)return;
+    optReport=report;
+    if(!report.rows.some(r=>String(r.id)===String(optSelected)))optSelected=report.recommendation?.id??report.best?.id??report.rows[0]?.id??null;
+    if(optDisplay==='auto'&&$('#optimizer-results'))$('#optimizer-results').innerHTML=optResults();
+    // Do not render the settings, move keyboard focus, or reset manual drafts.
+    updateTableHeads();updateBarHeight();
+  }
+  const autoAdvice=TestFlowAutoAdvice.create({run:autoCompute,onResult:autoShowResult,onChange:()=>{autoPaint();autoControls();},delay:450,cacheSize:4});
+  function autoSync(){
+    const snapshot=autoSnapshot();
+    if(snapshot)autoAdvice.sync(snapshot);else autoAdvice.invalidate();
+  }
+  function autoCapacityReference(){
+    // This is an explicitly hypothetical resource probe, never an approved recommendation.
+    if(optOptions.allowCapacity||optResource==='shared'||!capacity?.candidates)return '';
+    const primary=O.goals[optOptions.goal][0],o=optOptions;
+    const candidates=capacity.candidates.filter(t=>primary==='actual'?O.significant(t.before,t.after,o):primary==='meanWait'?t.saving>=0&&O.significant(t.beforeWait,t.afterWait,o):t.saving>=0&&t.waitSaving>=0&&O.significant(t.beforePeak,t.afterPeak,o,true));
+    candidates.sort((a,b)=>primary==='actual'?b.saving-a.saving:primary==='meanWait'?b.waitSaving-a.waitSaving:b.peakSaving-a.peakSaving);
+    const t=candidates[0];if(!t)return '';
+    const before=primary==='actual'?t.before:primary==='meanWait'?t.beforeWait:t.beforePeak,after=primary==='actual'?t.after:primary==='meanWait'?t.afterWait:t.afterPeak;
+    const tradeoffs=[];if(t.waitSaving<0)tradeoffs.push('人均等待增加 '+duration(round(-t.waitSaving)));if(t.peakSaving<0)tradeoffs.push('峰值等待人数增加 '+(-t.peakSaving)+' 人');
+    return `<div class="auto-advice-reference"><p><strong>可选容量参考：</strong>若“${esc(t.name)}”的${optField(t.kind)}由 ${t.from} 人增加至 ${t.to} 人，${optLabels[primary]}预计可由 ${optFormat(primary,before)} 降至 ${optFormat(primary,after)}。${tradeoffs.length?'同时，'+tradeoffs.join('，')+'。':''}</p><small>这是相对当前方案的单站假设试算，资源尚未核实，不是已批准的调整；不与其他收益相加，自动到场安排会随容量重算。</small><button class="text-button" id="auto-advice-capacity">核对可用容量</button></div>`;
+  }
+  function autoPaint(){
+    if(!$('#capacity-hint'))return;
+    const s=autoAdvice.getState(),valid=!!checked?.result,snapshot=autoSnapshot(),report=snapshot&&s.key===snapshot.key&&s.status==='ready'?s.report:null;
+    const card=$('#capacity-card');card.dataset.autoAdviceStatus=autoInputPending?'pending':optResource==='shared'?'blocked':optError?'invalid':s.status;
+    card.hidden=!valid||dismissedAdviceFor===adviceSignature||dismissedDiagnosticsFor===adviceSignature;
+    if(!valid)return;
+    const metrics=O.metrics(checked.result),breaches=O.violations(metrics,optOptions);
+    let title='正在自动分析方案',copy=autoStateText(s),outcome='',reference='',preview=false;
+    const limitText=breaches.length?`当前超出${breaches.map(k=>optLimits[k]).join('、')}上限。`:optHasLimits()?'当前方案满足全部已设上限；未设置的项目仍未评价。':'未设置可接受上限，以下只判断当前范围内的改善空间。';
+    if(optResource==='shared')title='请先核实跨站资源安排';
+    else if(optError)title='优化条件需要修正';
+    else if(s.status==='paused')title='自动分析已暂停';
+    else if(s.status==='error')title='暂未取得完整分析结果';
+    else if(report){
+      const row=report.recommendation,best=report.best;
+      if(!report.finished){title='部分比较未完成';copy='本次结果不足以给出可应用的推荐，请重新分析；不会将部分计算当作最优结论。';}
+      else if(!best){title='当前范围内尚无达标建议';copy=report.complete?'已比较的全部允许配置均未满足所有已设上限。不会擅自放宽标准；可在优化细节中调整允许范围或核对上限。':'本次限量比较尚未找到达标配置；未覆盖的组合仍可能可行。';}
+      else if(row?.current){
+        title='当前方案暂不需要调整';
+        copy=best.current?'在本次已比较的配置中，当前方案没有值得优先采用的替代安排。':'虽有数值更优的配置，但所选目标的改善未同时达到绝对量和相对比例阈值，建议保留当前安排。';
+        if(report.tested===1)copy='当前仅允许检查这一份配置，尚未比较其他组织方式；需要扩大范围时可在优化细节中设置。';
+      }else if(row){
+        title=row.capacityChanges.length?'已找到组织与容量的调整建议':'现有容量下有可采用的调整建议';
+        copy=optChanges(row);preview=true;
+        const primary=O.goals[optOptions.goal][0],before=metrics[primary],after=row.metrics[primary],delta=round(before-after);
+        outcome=`<p class="auto-advice-outcome"><strong>${optLabels[primary]}</strong>由 ${optFormat(primary,before)} ${delta>0?'降至':delta<0?'增至':'保持为'} <strong>${optFormat(primary,after)}</strong>${delta!==0?`，${delta>0?'减少':'增加'} ${optFormat(primary,Math.abs(delta))}`:''}。</p>`;
+        const worse=['actual','meanWait','maxWait','maxPersonWait','peak','arrivals'].filter(k=>row.metrics[k]>metrics[k]+.0005);
+        if(worse.length)outcome+=`<p class="optimizer-tradeoff">需要权衡：${worse.map(k=>`${optLabels[k]}增加 ${optFormat(k,row.metrics[k]-metrics[k])}`).join('；')}。确认前可查看完整对比。</p>`;
+      }
+      if(report.finished&&(!row||row.current))reference=autoCapacityReference();
+      if(!report.complete)copy+=' 本次未完整覆盖所有声明配置，不作范围内最优结论。';
+    }
+    const scope=report?`已自动比较 ${report.tested} / ${report.plans.length} 个配置 · ${optOptions.allowCapacity?'在已设容量边界内':'保持现有容量'} · ${optGoals[optOptions.goal]}`:'';
+    const actions=`<div class="auto-advice-actions">${preview?'<button class="button primary small" id="auto-advice-preview">预览建议并确认应用</button>':''}${['paused','error'].includes(s.status)?'<button class="button small" id="auto-advice-retry">重新分析</button>':''}<button class="text-button" data-go-view="optimizer">查看优化细节与调整条件</button></div>`;
+    const html=`<div class="auto-advice-body"><div class="auto-advice-headline"><strong>${title}</strong><span id="auto-advice-status" role="status" aria-live="polite">${report?'自动分析完成':autoInputPending?'等待输入完成':s.status==='running'&&s.total?`${s.done} / ${s.total}`:''}</span></div><p>${esc(copy)}</p>${outcome}<p class="auto-advice-limit ${breaches.length?'optimizer-tradeoff':''}">${limitText}</p>${scope?`<p class="auto-advice-scope">${scope}${optResource==='unconfirmed'?'；应用前仍需核实资源与测试规程':''}。</p>`:''}${actions}${reference}</div>`;
+    if(html!==autoLastMarkup){$('#capacity-hint').innerHTML=html;autoLastMarkup=html;}
+  }
+  function autoControls(){
+    const s=autoAdvice.getState(),active=['pending','running'].includes(s.status);
+    const button=$('#optimizer-run');
+    if(button){button.textContent=active?'正在自动分析':'重新分析';button.disabled=active||!!optBusy||!!optError||optResource==='shared';}
+    const cancel=$('#optimizer-cancel');if(cancel){cancel.hidden=!active&&!optBusy;cancel.textContent=optBusy?'停止计算':'暂停自动分析';}
+    if($('#optimizer-progress')&&!optBusy)$('#optimizer-progress').textContent=autoStateText(s);
+    if(optDisplay==='auto'&&!optReport&&$('#optimizer-results')){
+      const existing=$('#optimizer-results'),html=optResults();if(existing.innerHTML!==html)existing.innerHTML=html;
+    }
+  }
+  const autoOriginalResults=optResults;
+  optResults=function(){
+    if(optDisplay!=='auto'||optReport)return autoOriginalResults();
+    const s=autoAdvice.getState();
+    return `<div class="optimizer-empty"><h4>${s.status==='running'?'正在自动比较完整方案':optResource==='shared'?'请先核实资源条件':'方案建议会自动更新'}</h4><p>${esc(autoStateText(s))}</p><p>无需手动生成建议。这里可以修改目标、等待上限和允许调整范围；手动容量试算仍单独保留。</p></div>`;
+  };
+  const autoOriginalRenderOptimizer=renderOptimizer;
+  renderOptimizer=function(panel){
+    autoOriginalRenderOptimizer(panel);
+    const intro=$('.optimizer-heading p',panel);if(intro)intro.textContent='方案建议已自动分析；在这里调整目标、限制和可用资源，结果会随之更新。';
+  };
+  renderResultOverview=function(){
+    const c=checked?.config;if(!c)return;
+    $('#result-context').textContent=`${c.n} 人完成 ${c.stations.length} 个站点 · ${c.mode}${c.groups?' · '+c.groups+' 组':''} · ${c.arrivalMode==='auto'?'自动分批到场':'全体集中到场'}`;
+    autoSync();autoPaint();autoControls();
+  };
+  const autoOriginalRecalculate=recalculate;
+  recalculate=function(){autoInputPending=false;const value=autoOriginalRecalculate();autoSync();autoPaint();autoControls();return value;};
+  const autoOriginalInvalidate=optInvalidate;
+  optInvalidate=function(message){autoOriginalInvalidate(message);autoAdvice.invalidate();};
+  const autoOriginalRenderSchedule=renderSchedule;
+  renderSchedule=function(){const value=autoOriginalRenderSchedule();autoSync();autoPaint();autoControls();return value;};
+  const autoOriginalRun=optRun;
+  optRun=async function(action='search'){
+    if(action==='search'){
+      recalculate();if(!checked?.result)return;
+      try{optOptions=optRead();optError='';}catch(error){optError=error.message;autoSync();renderSchedule();return;}
+      const snapshot=autoSnapshot();if(!snapshot)return;
+      optStop();optReport=null;optSelected=null;optStress=null;optDisplay='auto';optRowsShown=40;optSave();autoAdvice.refresh(snapshot);autoControls();return;
+    }
+    autoManualPriority++;autoAdvice.suspend();
+    try{return await autoOriginalRun(action);}finally{autoManualPriority--;if(!autoManualPriority){autoAdvice.resume();autoSync();autoControls();}}
+  };
+  const autoOriginalRefresh=optRefreshResults;
+  optRefreshResults=function(){autoOriginalRefresh();autoControls();};
+  const autoTopEntry=$('.results-heading [data-go-view="optimizer"]');if(autoTopEntry)autoTopEntry.textContent='优化细节';
+  document.addEventListener('input',e=>{
+    // Actual-plan fields update immediately, before the existing calculation debounce.
+    if(e.target.matches('[data-global],[data-time],[data-station],[data-break]')){
+      autoInputPending=true;autoAdvice.invalidate();
+      if(optReport){optReport=null;optSelected=null;}
+      if(optDialog.open){optDialog.close();optPending=null;}
+      autoPaint();autoControls();
+    }
+  });
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('button');if(!t||t.disabled)return;
+    if(t.id==='optimizer-cancel'&&!optBusy){e.stopImmediatePropagation();autoAdvice.pause();optReport=null;optSelected=null;autoControls();return;}
+    if(t.id==='auto-advice-preview'){
+      e.stopImmediatePropagation();const request=autoSnapshot(),s=autoAdvice.getState(),report=s.report,row=report?.recommendation;
+      if(!request||request.key!==s.key||s.status!=='ready'||!report?.finished||!row||row.current||row.violations.length){toast('方案已经变化，正在重新分析，请查看更新后的建议。');return;}
+      optReport=report;optDisplay='auto';optSelected=row.id;optPreview();updateTableHeads();return;
+    }
+    if(t.id==='auto-advice-retry'){e.stopImmediatePropagation();optRun();return;}
+    if(t.id==='auto-advice-capacity'){
+      e.stopImmediatePropagation();optOptions.allowCapacity=true;optInvalidate('请按实际资源填写可用容量。');optSave();switchPane('results');setView('optimizer');$('#optimizer-capacity-title')?.scrollIntoView({block:'center'});$('[data-opt-cap-max]')?.focus({preventScroll:true});
+    }
+  },true);
+  window.addEventListener('pagehide',()=>autoAdvice.suspend());
+  window.addEventListener('pageshow',()=>{autoAdvice.resume();autoSync();});
   renderStations();renderBreaks();syncControls();recalculate();setSidebar(sidebarOpen);
   const context=document.modelContext;
   if(context?.registerTool){

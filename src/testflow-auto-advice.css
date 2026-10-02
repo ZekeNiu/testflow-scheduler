@@ -1,0 +1,15 @@
+/* Keep the existing advisory surface and palette; only its content becomes actionable. */
+#capacity-hint{display:block}
+.auto-advice-body{min-width:0;font-size:13px;line-height:1.8}
+.auto-advice-body p{margin:8px 0;overflow-wrap:anywhere}
+.auto-advice-headline{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.auto-advice-headline>strong{font-size:14px;font-weight:600;color:var(--ink)}
+#auto-advice-status,.auto-advice-scope,.auto-advice-limit{font-size:12px;color:var(--muted)}
+.auto-advice-limit.optimizer-tradeoff{color:#95532b}
+.auto-advice-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:12px}
+.auto-advice-actions .button{max-width:100%;white-space:normal}
+.auto-advice-reference{border-top:1px solid #dbe5de;margin-top:14px;padding-top:6px}
+.auto-advice-reference small{display:block;font-size:12px;color:var(--muted);line-height:1.75}
+.auto-advice-reference .text-button{margin-top:6px}
+@media(max-width:480px){.auto-advice-actions{align-items:flex-start}.auto-advice-actions .button{width:100%}}
+@media print{.auto-advice-actions,.auto-advice-reference button{display:none!important}}
