@@ -1,12 +1,12 @@
 {
-  "sourceCommit": "16e15c1c66d15194f738c47e39a14b73b8220d36",
-  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36965440974",
+  "sourceCommit": "ef14ded733c3a4cdba7bf60bdd410c177009bd90",
+  "runUrl": "https://github.com/ZekeNiu/testflow-scheduler/actions/runs/36966029144",
   "browserSuitePresent": false,
   "checks": [
     {
       "command": "npm test",
       "exitCode": 0,
-      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":133,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":449}\n",
+      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":141,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":465}\n",
       "stderr": ""
     },
     {
@@ -24,7 +24,7 @@
     {
       "command": "python3 build.py",
       "exitCode": 0,
-      "stdout": "Built index.html: 317053 bytes\n",
+      "stdout": "Built index.html: 334244 bytes\n",
       "stderr": ""
     }
   ],
