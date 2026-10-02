@@ -20,6 +20,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Apply reviewed development fixes
+        if: github.ref_name == 'unified-optimizer-work' && hashFiles('tests/apply-unified-fixes.py') != ''
+        run: python3 tests/apply-unified-fixes.py
       - name: Install browser verification environment
         if: hashFiles('tests/unified-browser.py') != ''
         run: |
@@ -32,7 +35,7 @@ jobs:
           TESTFLOW_SCREENSHOTS: test-results/unified
         run: |
           python3 - <<'PY'
-          import json, os, subprocess
+          import hashlib, json, os, subprocess
           from pathlib import Path
           browser=Path('tests/unified-browser.py').exists()
           commands=[['npm','test'],['node','tests/optimizer.cjs'],['node','tests/unified-optimizer.cjs'],['python3','build.py']]
@@ -41,13 +44,14 @@ jobs:
           for cmd in commands:
               try:
                   p=subprocess.run(cmd,capture_output=True,text=True,timeout=360)
-                  item={'command':' '.join(cmd),'exitCode':p.returncode,'stdout':p.stdout[-16000:],'stderr':p.stderr[-12000:]}
+                  item={'command':' '.join(cmd),'exitCode':p.returncode,'stdout':p.stdout[-20000:],'stderr':p.stderr[-12000:]}
               except Exception as e:
                   item={'command':' '.join(cmd),'exitCode':1,'stdout':'','stderr':str(e)}
               report['checks'].append(item)
               print(item['command'],item['exitCode']);print(item['stdout']);print(item['stderr'])
           report['passed']=all(x['exitCode']==0 for x in report['checks'])
           report['browserVerified']=browser and report['passed']
+          report['sha256']={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [*sorted(Path('src').glob('*')),Path('build.py'),Path('index.html')] if p.is_file()}
           Path('docs/unified-verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           raise SystemExit(0 if report['passed'] else 1)
           PY
@@ -68,6 +72,8 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add docs/unified-verification.json
+          git add -u -- src tests
+          if [ -f docs/unified-preview.b64 ]; then git add docs/unified-preview.b64; fi
           if python3 -c "import json; assert json.load(open('docs/unified-verification.json'))['browserVerified']"; then git add index.html; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m '记录统一优化验证结果与已验证构建'
