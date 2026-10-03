@@ -2,9 +2,9 @@
   let autoInputPending=false,autoManualPriority=0,autoLastMarkup='';
   const autoSnapshot=()=>{
     if(autoInputPending||!checked?.result||optError||optResource==='shared')return null;
-    const signature=optSignature();
-    if(!signature||signature!==JSON.stringify(checked.config))return null;
-    return {key:JSON.stringify([signature,optOptions,optResource]),signature,raw:structuredClone(state),options:structuredClone(optOptions)};
+    const snapshot=O.snapshot(state);
+    if(!snapshot.signature||snapshot.signature!==JSON.stringify(checked.config))return null;
+    return {...snapshot,key:JSON.stringify([snapshot.inputKey,optOptions,optResource]),options:structuredClone(optOptions)};
   };
   function autoCompute(request,control){
     const fallback=()=>O.searchAsync(request.raw,request.options,{cancelled:control.cancelled,progress:control.progress});
@@ -42,7 +42,7 @@
     return '有效方案设置完成后会自动分析，无需先打开“方案优化”。';
   }
   function autoShowResult(report,key){
-    const snapshot=autoSnapshot();if(!snapshot||snapshot.key!==key)return;
+    const snapshot=autoSnapshot();if(!snapshot||snapshot.key!==key||report.inputKey!==snapshot.inputKey)return;
     optReport=report;
     if(!report.rows.some(r=>String(r.id)===String(optSelected)))optSelected=report.recommendation?.id??report.best?.id??report.rows[0]?.id??null;
     if(optDisplay==='auto'&&$('#optimizer-results'))$('#optimizer-results').innerHTML=optResults();
@@ -67,12 +67,12 @@
   }
   function autoPaint(){
     if(!$('#capacity-hint'))return;
-    const s=autoAdvice.getState(),valid=!!checked?.result,snapshot=autoSnapshot(),report=snapshot&&s.key===snapshot.key&&s.status==='ready'?s.report:null;
+    const s=autoAdvice.getState(),valid=!!checked?.result,snapshot=autoSnapshot(),report=snapshot&&s.key===snapshot.key&&s.status==='ready'&&s.report?.inputKey===snapshot.inputKey?s.report:null;
     const card=$('#capacity-card');card.dataset.autoAdviceStatus=autoInputPending?'pending':optResource==='shared'?'blocked':optError?'invalid':s.status;
     card.hidden=!valid||dismissedAdviceFor===adviceSignature||dismissedDiagnosticsFor===adviceSignature;
     if(!valid)return;
     const metrics=O.metrics(checked.result),breaches=O.violations(metrics,optOptions);
-    let title='正在自动分析方案',copy=autoStateText(s),outcome='',reference='',preview=false;
+    let title='正在自动分析方案',copy=autoStateText(s),outcome='',reference='',secondaryMarkup='',preview=false;
     const limitText=breaches.length?`当前超出${breaches.map(k=>optLimits[k]).join('、')}上限。`:optHasLimits()?'当前方案满足全部已设上限；未设置的项目仍未评价。':'未设置可接受上限，以下只判断当前范围内的改善空间。';
     if(optResource==='shared')title='请先核实跨站资源安排';
     else if(optError)title='优化条件需要修正';
@@ -86,12 +86,22 @@
         title='当前方案暂不需要调整';
         copy=best.current?'在本次已比较的配置中，当前方案没有值得优先采用的替代安排。':'虽有数值更优的配置，但所选目标的改善未同时达到绝对量和相对比例阈值，建议保留当前安排。';
         if(report.tested===1)copy='当前仅允许检查这一份配置，尚未比较其他组织方式；需要扩大范围时可在优化细节中设置。';
+        const secondary=report.secondaryAlternative;
+        if(secondary){
+          title='当前方案可保留，另有辅助方案';
+          copy='按所选优先目标与改善阈值，默认保留当前安排。以下辅助方案在其他指标上有明显收益，可以结合组织负担进一步比较。';
+          const primary=O.goals[optOptions.goal][0],changed=Object.keys(optLabels).filter(k=>k!==primary&&Math.abs(secondary.metrics[k]-metrics[k])>.0005);
+          const primaryText=Math.abs(secondary.metrics[primary]-metrics[primary])<=.0005?`${optLabels[primary]}保持 ${optFormat(primary,metrics[primary])}`:`${optLabels[primary]}由 ${optFormat(primary,metrics[primary])} 变为 ${optFormat(primary,secondary.metrics[primary])}`;
+          const gains=changed.filter(k=>secondary.metrics[k]<metrics[k]),costs=Object.keys(optLabels).filter(k=>secondary.metrics[k]>metrics[k]+.0005);
+          const describe=k=>`${optLabels[k]}由 ${optFormat(k,metrics[k])} ${secondary.metrics[k]<metrics[k]?'降至':'增至'} ${optFormat(k,secondary.metrics[k])}`;
+          secondaryMarkup=`<div class="auto-advice-reference"><p><strong>辅助方案：</strong>${esc(optChanges(secondary))}</p><p>${primaryText}${gains.length?'；'+gains.map(describe).join('；'):''}。</p>${costs.length?`<p class="optimizer-tradeoff">需要权衡：${costs.map(describe).join('；')}。</p>`:''}<button class="text-button" id="auto-advice-secondary">查看辅助方案完整对比</button></div>`;
+        }
       }else if(row){
         title=row.capacityChanges.length?'已找到组织与容量的调整建议':'现有容量下有可采用的调整建议';
         copy=optChanges(row);preview=true;
         const primary=O.goals[optOptions.goal][0],before=metrics[primary],after=row.metrics[primary],delta=round(before-after);
         outcome=`<p class="auto-advice-outcome"><strong>${optLabels[primary]}</strong>由 ${optFormat(primary,before)} ${delta>0?'降至':delta<0?'增至':'保持为'} <strong>${optFormat(primary,after)}</strong>${delta!==0?`，${delta>0?'减少':'增加'} ${optFormat(primary,Math.abs(delta))}`:''}。</p>`;
-        const worse=['actual','meanWait','maxWait','maxPersonWait','peak','arrivals'].filter(k=>row.metrics[k]>metrics[k]+.0005);
+        const worse=Object.keys(optLabels).filter(k=>row.metrics[k]>metrics[k]+.0005);
         if(worse.length)outcome+=`<p class="optimizer-tradeoff">需要权衡：${worse.map(k=>`${optLabels[k]}增加 ${optFormat(k,row.metrics[k]-metrics[k])}`).join('；')}。确认前可查看完整对比。</p>`;
       }
       if(report.finished&&(!row||row.current))reference=autoCapacityReference();
@@ -99,7 +109,7 @@
     }
     const scope=report?`已自动比较 ${report.tested} / ${report.plans.length} 个配置 · ${optOptions.allowCapacity?'在已设容量边界内':'保持现有容量'} · ${optGoals[optOptions.goal]}`:'';
     const actions=`<div class="auto-advice-actions">${preview?'<button class="button primary small" id="auto-advice-preview">预览建议并确认应用</button>':''}${['paused','error'].includes(s.status)?'<button class="button small" id="auto-advice-retry">重新分析</button>':''}<button class="text-button" data-go-view="optimizer">查看优化细节与调整条件</button></div>`;
-    const html=`<div class="auto-advice-body"><div class="auto-advice-headline"><strong>${title}</strong><span id="auto-advice-status" role="status" aria-live="polite">${report?'自动分析完成':autoInputPending?'等待输入完成':s.status==='running'&&s.total?`${s.done} / ${s.total}`:''}</span></div><p>${esc(copy)}</p>${outcome}<p class="auto-advice-limit ${breaches.length?'optimizer-tradeoff':''}">${limitText}</p>${scope?`<p class="auto-advice-scope">${scope}${optResource==='unconfirmed'?'；应用前仍需核实资源与测试规程':''}。</p>`:''}${actions}${reference}</div>`;
+    const html=`<div class="auto-advice-body"><div class="auto-advice-headline"><strong>${title}</strong><span id="auto-advice-status" role="status" aria-live="polite">${report?'自动分析完成':autoInputPending?'等待输入完成':s.status==='running'&&s.total?`${s.done} / ${s.total}`:''}</span></div><p>${esc(copy)}</p>${outcome}<p class="auto-advice-limit ${breaches.length?'optimizer-tradeoff':''}">${limitText}</p>${scope?`<p class="auto-advice-scope">${scope}${optResource==='unconfirmed'?'；应用前仍需核实资源与测试规程':''}。</p>`:''}${actions}${secondaryMarkup}${reference}</div>`;
     if(html!==autoLastMarkup){$('#capacity-hint').innerHTML=html;autoLastMarkup=html;}
   }
   function autoControls(){
@@ -162,8 +172,13 @@
     if(t.id==='optimizer-cancel'&&!optBusy){e.stopImmediatePropagation();autoAdvice.pause();optReport=null;optSelected=null;autoControls();return;}
     if(t.id==='auto-advice-preview'){
       e.stopImmediatePropagation();const request=autoSnapshot(),s=autoAdvice.getState(),report=s.report,row=report?.recommendation;
-      if(!request||request.key!==s.key||s.status!=='ready'||!report?.finished||!row||row.current||row.violations.length){toast('方案已经变化，正在重新分析，请查看更新后的建议。');return;}
+      if(!request||request.key!==s.key||report?.inputKey!==request.inputKey||s.status!=='ready'||!report?.finished||!row||row.current||row.violations.length){toast('方案已经变化，正在重新分析，请查看更新后的建议。');return;}
       optReport=report;optDisplay='auto';optSelected=row.id;optPreview();updateTableHeads();return;
+    }
+    if(t.id==='auto-advice-secondary'){
+      e.stopImmediatePropagation();const request=autoSnapshot(),s=autoAdvice.getState(),report=s.report,row=report?.secondaryAlternative;
+      if(!request||request.key!==s.key||report?.inputKey!==request.inputKey||s.status!=='ready'||!report?.finished||!row||row.violations.length){toast('方案已经变化，请查看更新后的分析。');return;}
+      optReport=report;optDisplay='auto';optSelected=row.id;optStress=null;optStressError='';switchPane('results');setView('optimizer');$('#optimizer-result-title')?.focus({preventScroll:true});return;
     }
     if(t.id==='auto-advice-retry'){e.stopImmediatePropagation();optRun();return;}
     if(t.id==='auto-advice-capacity'){

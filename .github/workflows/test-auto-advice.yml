@@ -3,6 +3,8 @@ on:
   push:
     branches: [main, auto-advice-work]
     paths: ['src/**', 'tests/**', 'build.py', '.github/workflows/test-auto-advice.yml']
+  pull_request:
+    paths: ['src/**', 'tests/**', 'build.py', 'package.json', '.github/workflows/test-auto-advice.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -18,7 +20,7 @@ jobs:
       - name: Install browser verification environment
         run: |
           python3 -m venv /tmp/testflow-browser
-          /tmp/testflow-browser/bin/pip install playwright==1.57.0
+          /tmp/testflow-browser/bin/pip install playwright==1.57.0 openpyxl==3.1.5
           /tmp/testflow-browser/bin/python -m playwright install --with-deps chromium
       - name: Verify original functionality and automatic advice
         env:
@@ -28,7 +30,7 @@ jobs:
           python3 - <<'PY'
           import hashlib,json,os,subprocess
           from pathlib import Path
-          commands=[['npm','test'],['node','tests/optimizer.cjs'],['node','tests/unified-optimizer.cjs'],['node','tests/auto-advice.cjs'],['python3','build.py'],['/tmp/testflow-browser/bin/python','tests/unified-browser.py'],['/tmp/testflow-browser/bin/python','tests/auto-advice-browser.py']]
+          commands=[['npm','test'],['python3','build.py'],['/tmp/testflow-browser/bin/python','tests/export-regressions.py'],['/tmp/testflow-browser/bin/python','tests/unified-browser.py'],['/tmp/testflow-browser/bin/python','tests/auto-advice-browser.py'],['/tmp/testflow-browser/bin/python','tests/review-browser.py']]
           if os.environ['GITHUB_REF_NAME']=='main':commands.append(['git','diff','--exit-code','--','index.html'])
           report={'sourceCommit':os.environ['GITHUB_SHA'],'runUrl':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'checks':[]}
           for command in commands:

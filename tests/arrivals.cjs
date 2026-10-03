@@ -7,7 +7,7 @@ let checks=0;
 const all=calc(plan({arrivalMode:'all'})),auto=calc(plan());
 assert.equal(all.actual,6300);assert.equal(all.stationStats[0].meanWait,2985);assert.equal(all.peakWaiting,398);
 assert.equal(auto.actual,all.actual);assert.equal(auto.meanWait,0);assert.equal(auto.peakWaiting,0);assert.equal(auto.arrivalPlan.length,200);
-assert.deepEqual(auto.arrivalPlan[0],{station:1,group:0,people:[1,2],count:2,report:0,ready:300,firstBegin:300,lastBegin:300,batch:1});
+assert.deepEqual(auto.arrivalPlan[0],{station:1,group:0,people:[1,2],count:2,report:0,ready:300,firstBegin:300,lastBegin:300,batch:1,wave:1});
 assert.equal(auto.arrivalPlan[199].report,5970);assert.equal(auto.arrivalPlan[199].ready,6270);
 exact(auto.stationStats[0].utilization,1);assert.equal(auto.stationStats[0].workDuration,6000);assert.equal(auto.stationStats[0].peakTesting,2);checks++;
 const twenty=calc(plan({arrivalBatchSize:20}));assert.equal(twenty.actual,all.actual);assert.equal(twenty.arrivalPlan.length,20);assert.equal(twenty.meanWait,135);assert.equal(twenty.peakWaiting,18);assert.equal(twenty.stationStats[0].maxWait,270);checks++;

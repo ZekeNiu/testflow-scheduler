@@ -6,7 +6,7 @@
   const colors=['#287c62','#588bba','#9976ab','#b58a3d','#4c9393','#b47183','#789047','#7477ab','#aa815b','#408e7c','#657fac','#a26d94','#a19047','#619099','#ad756e','#84925f','#8b80ad','#9f886a','#639279','#858798'];
   const STORAGE='testflow-plan-v2',UI_STORAGE='testflow-interface-v5';
   const DEFAULT_METRICS=['actual','reserved','meanWait','peakWaiting'];
-  const METRIC_LABELS={actual:'现场总时长',reserved:'建议预留时间',meanWait:'人均累计等待时间',peakWaiting:'预计峰值等待人数',people:'测试人数',stations:'启用站点数量',finish:'预计结束时间',maxWait:'最长单站等待时间',arrivals:'到场批次数',maxWork:'最长站点工作时长'};
+  const METRIC_LABELS={actual:'开场至收尾时长',reserved:'建议预留时间',meanWait:'人均累计等待时间',peakWaiting:'预计峰值等待人数',people:'测试人数',stations:'启用站点数量',finish:'预计结束时间',maxWait:'最长单站等待时间',arrivals:'到场波次数',maxWork:'最长站点工作时长',coverageDuration:'场地覆盖时长',earliestArrival:'最早到场时间'};
   let metricCards=[...DEFAULT_METRICS],dismissedAdviceFor='',adviceSignature='';
   function saveInterface(){try{localStorage.setItem(UI_STORAGE,JSON.stringify({metricCards,dismissedAdviceFor}));}catch{}}
   try{const saved=JSON.parse(localStorage.getItem(UI_STORAGE)||'{}');if(Array.isArray(saved.metricCards)&&saved.metricCards.length===4&&saved.metricCards.every(key=>typeof key==='string'&&Object.hasOwn(METRIC_LABELS,key)))metricCards=saved.metricCards;dismissedAdviceFor=typeof saved.dismissedAdviceFor==='string'?saved.dismissedAdviceFor:'';}catch{}
@@ -68,7 +68,7 @@
           <label class="field"><span>完整耗时 / ${batch?'批':'人'}</span>${timeField(`station.${i}.duration`,s.duration,`${label}完整耗时`,off)}${errorSlot(`station.${i}.duration`)}</label>
           <label class="field"><span>复位时间</span>${timeField(`station.${i}.reset`,s.reset,`${label}复位时间`,off)}${errorSlot(`station.${i}.reset`)}</label>
           <label class="field"><span>离站间隔</span>${timeField(`station.${i}.gap`,s.gap,`${label}离站间隔`,off)}${errorSlot(`station.${i}.gap`)}</label>
-          ${batch?`<label class="field"><span>开批规则</span><select data-station="${i}" data-field="policy" aria-label="${label}开批规则" ${disabled}><option value="full" ${s.policy==='full'?'selected':''}>凑满再开</option><option value="immediate" ${s.policy==='immediate'?'selected':''}>有人即开</option></select>${errorSlot(`station.${i}.policy`)}</label>`:''}
+          ${batch?`<label class="field"><span>开批规则</span><select data-station="${i}" data-field="policy" aria-label="${label}开批规则" ${disabled}><option value="full" ${s.policy==='full'?'selected':''}>满批优先，尾批可不足</option><option value="immediate" ${s.policy==='immediate'?'selected':''}>有人即开</option></select>${errorSlot(`station.${i}.policy`)}</label>`:''}
         </div><div class="station-footer"><span>按站点顺序安排测试</span><div class="row-actions"><button class="row-action" data-station-action="up" data-index="${i}" aria-label="上移${label}" title="上移站点" ${i===0?'disabled':''}>↑</button><button class="row-action" data-station-action="down" data-index="${i}" aria-label="下移${label}" title="下移站点" ${i===state.stations.length-1?'disabled':''}>↓</button><button class="row-action remove" data-station-action="remove" data-index="${i}" aria-label="删除${label}" title="删除站点">×</button></div></div></div></details>`;
     }).join('');
     $('#station-count').textContent=`${state.stations.filter(s=>s.enabled!==false).length} 个站点启用，共 ${state.stations.length} 个站点`;
@@ -215,15 +215,17 @@
   function renderSummary() {
     const r=checked?.result,c=checked?.config;
     const descriptors={
-      actual:{value:r?metric(r.actual):'—',meta:r?'包括开场准备、测试、休息与收尾':'修正参数后自动更新'},
-      reserved:{value:r?metric(r.reserved):'—',meta:r?`另含 ${duration(c.buffer)} 机动预留`:'现场总时长加机动预留'},
+      actual:{value:r?metric(r.actual):'—',meta:r?`包括开场准备、测试、休息与收尾<br>最早到场 ${clock(r.earliestArrival)} · 收尾 ${clock(r.actual)}<br>场地覆盖 ${duration(r.coverageDuration)}`:'修正参数后自动更新'},
+      reserved:{value:r?metric(r.reserved):'—',meta:r?`另含 ${duration(c.buffer)} 机动预留`:'开场至收尾时长加机动预留'},
       meanWait:{value:r?metric(Math.round(r.meanWait)):'—',meta:'每人各站等待相加后取平均，包含统一换站等待',help:'waiting'},
       peakWaiting:{value:r?`${r.peakWaiting}<span class="u">人</span>`:'—',meta:'全场同一时刻等待测试的人数最大值',help:'queue'},
       people:{value:r?`${c.n}<span class="u">人</span>`:'—',meta:'本方案安排完成全部启用站点的人数'},
       stations:{value:r?`${c.stations.length}<span class="u">个</span>`:'—',meta:'已启用并纳入排程的测试站点'},
       finish:{value:r&&c.startMs!==null?esc(clock(r.actual).split(' ').at(-1)):'—',meta:r&&c.startMs!==null?'结束日期 '+esc(clock(r.actual,true).split(' ')[0]):'填写开场日期与时间后显示预计结束钟点'},
       maxWait:{value:r?metric(Math.max(...r.stationStats.map(x=>x.maxWait))):'—',meta:'所有人员、所有站点中最长的一次等待',help:'maxWait'},
-      arrivals:{value:r?`${r.arrivalPlan.length}<span class="u">批</span>`:'—',meta:'按人员编号及起始站点分别安排的到场批次',help:'arrivals'},
+      arrivals:{value:r?`${r.arrivalWaveCount}<span class="u">波</span>`:'—',meta:'同一建议到场时刻计一波，接待小组单独列出',help:'arrivals'},
+      coverageDuration:{value:r?metric(r.coverageDuration):'—',meta:r?`覆盖 ${clock(r.coverageStart)} 至 ${clock(r.coverageEnd)}，含开场前到场`:'较早的开场或到场时刻至收尾结束'},
+      earliestArrival:{value:r?esc(clock(r.earliestArrival)):'—',meta:'建议到场表中的最早时刻，可早于开场'},
       maxWork:{value:r?metric(Math.max(...r.stationStats.map(x=>x.workDuration))):'—',meta:'各站首次开测至最后测完之间的最长跨度',help:'work'}
     };
     if(r&&c.startMs!==null){descriptors.actual.meta+=`<br>预计结束 ${clock(r.actual,true)}`;descriptors.reserved.meta+=`<br>建议预留至 ${clock(r.reserved,true)}`;}
@@ -234,7 +236,7 @@
     const c=checked.config;
     $('#result-context').textContent=`${c.n} 人完成 ${c.stations.length} 个站点 · ${state.mode==='分组轮转'?'分组同步轮转':state.mode}${c.groups?' · 共 '+c.groups+' 组':''} · ${c.arrivalMode==='auto'?'自动分批到场':'全体集中到场'}`;
     const best=capacity.best;
-    $('#capacity-hint').innerHTML=best?`<span>将“<strong>${esc(best.name)}</strong>”的${best.kind==='batch'?'每批人数上限':'可同时测试人数'}由 <strong>${best.from} 人</strong>增加至 <strong>${best.to} 人</strong>，在其他参数不变时，预计可缩短现场总时长 <strong>${duration(best.saving)}</strong>。</span><button class="text-button" data-go-view="capacity">查看容量试算</button>`:`<span>${capacity.candidates.length?'各站单独将可同时测试人数或每批人数上限增加 1 人，预计均不能缩短当前现场总时长。可通过容量试算比较其他人数上限。':'当前各站的人数上限已覆盖本次测试人数；可在容量试算中比较其他配置。'}</span><button class="text-button" data-go-view="capacity">查看容量试算</button>`;
+    $('#capacity-hint').innerHTML=best?`<span>将“<strong>${esc(best.name)}</strong>”的${best.kind==='batch'?'每批人数上限':'可同时测试人数'}由 <strong>${best.from} 人</strong>增加至 <strong>${best.to} 人</strong>，在其他参数不变时，预计可缩短开场至收尾时长 <strong>${duration(best.saving)}</strong>。</span><button class="text-button" data-go-view="capacity">查看容量试算</button>`:`<span>${capacity.candidates.length?'各站单独将可同时测试人数或每批人数上限增加 1 人，预计均不能缩短当前开场至收尾时长。可通过容量试算比较其他人数上限。':'当前各站的人数上限已覆盖本次测试人数；可在容量试算中比较其他配置。'}</span><button class="text-button" data-go-view="capacity">查看容量试算</button>`;
   }
 
   function setView(next) {
@@ -338,11 +340,11 @@
     if(Number(filterStation)>c.stations.length)filterStation='';
     const rows=r.records.filter(e=>(!filterStation||e.station===Number(filterStation))&&(!filterPerson||e.person===Number(filterPerson)));
     detailPage=Math.max(0,Math.min(detailPage,Math.ceil(rows.length/detailSize)-1));
-    panel.innerHTML=`<div class="schedule-toolbar"><div class="schedule-controls"><label>站点<select id="filter-station" aria-label="筛选站点"><option value="">全部站点</option>${c.stations.map((s,i)=>`<option value="${i+1}" ${Number(filterStation)===i+1?'selected':''}>${String(s.slot).padStart(2,'0')} ${esc(s.name)}</option>`).join('')}</select></label><label>人员<input id="filter-person" type="number" min="1" max="${c.n}" step="1" placeholder="全部" value="${esc(filterPerson)}" aria-label="筛选人员"></label><label>每页<select id="detail-size" aria-label="明细每页条数">${options([20,50,100],detailSize,' 条')}</select></label></div>${pagination(rows.length,detailSize)}</div><div class="table-scroll"><table class="result-table"><thead><tr><th>人员</th><th>小组 / 次序</th><th>站点</th><th>使用工位 / 测试批次</th><th>个人最早可开测时间</th><th>实际开测时间</th><th>测试结束时间</th><th>本站等待时间</th><th>期间整体休息时间</th></tr></thead><tbody>${rows.slice(detailPage*detailSize,(detailPage+1)*detailSize).map(e=>`<tr><td>${String(e.person).padStart(3,'0')} 号</td><td>${e.group?'第 '+e.group+' 组':'—'}<small>第 ${e.visit} 项</small></td><td><i class="station-dot" style="background:${color(e.station-1)}"></i>${esc(e.name)}</td><td>${c.stations[e.station-1].kind==='batch'?'批次':'工位'} ${e.unit}</td><td>${clock(offset()+e.ready)}</td><td>${clock(offset()+e.begin)}</td><td>${clock(offset()+e.end)}</td><td>${duration(e.wait)}</td><td>${duration(e.breakWait)}</td></tr>`).join('')||'<tr><td colspan="9" class="empty-view">没有符合条件的排程。</td></tr>'}</tbody></table></div><p class="schedule-help">${r.records.length.toLocaleString('zh-CN')} 条完整排程，导出包含全部人员。个人最早可开测时间按完成上一站及满足最低离站间隔计算，统一换站或站点繁忙可能推迟实际开测。等待包含排队、凑批及统一换站等待，扣除整体休息重叠；${c.startMs===null?'钟点为距全场开场的累计时长。':'钟点按当前设备本地时间显示。'}</p>`;
+    panel.innerHTML=`<div class="schedule-toolbar"><div class="schedule-controls"><label>站点<select id="filter-station" aria-label="筛选站点"><option value="">全部站点</option>${c.stations.map((s,i)=>`<option value="${i+1}" ${Number(filterStation)===i+1?'selected':''}>${String(s.slot).padStart(2,'0')} ${esc(s.name)}</option>`).join('')}</select></label><label>人员<input id="filter-person" type="number" min="1" max="${c.n}" step="1" placeholder="全部" value="${esc(filterPerson)}" aria-label="筛选人员"></label><label>每页<select id="detail-size" aria-label="明细每页条数">${options([20,50,100],detailSize,' 条')}</select></label></div>${pagination(rows.length,detailSize)}</div><div class="table-scroll"><table class="result-table"><thead><tr><th>人员</th><th>小组 / 次序</th><th>站点</th><th>使用工位 / 测试批次</th><th>个人最早可开测时间</th><th>计划开测时间</th><th>测试结束时间</th><th>本站等待时间</th><th>期间整体休息时间</th></tr></thead><tbody>${rows.slice(detailPage*detailSize,(detailPage+1)*detailSize).map(e=>`<tr><td>${String(e.person).padStart(3,'0')} 号</td><td>${e.group?'第 '+e.group+' 组':'—'}<small>第 ${e.visit} 项</small></td><td><i class="station-dot" style="background:${color(e.station-1)}"></i>${esc(e.name)}</td><td>${c.stations[e.station-1].kind==='batch'?'批次':'工位'} ${e.unit}</td><td>${clock(offset()+e.ready)}</td><td>${clock(offset()+e.begin)}</td><td>${clock(offset()+e.end)}</td><td>${duration(e.wait)}</td><td>${duration(e.breakWait)}</td></tr>`).join('')||'<tr><td colspan="9" class="empty-view">没有符合条件的排程。</td></tr>'}</tbody></table></div><p class="schedule-help">${r.records.length.toLocaleString('zh-CN')} 条完整排程，导出包含全部人员。个人最早可开测时间按完成上一站及满足最低离站间隔计算，统一换站或站点繁忙可能推迟实际开测。等待包含排队、凑批及统一换站等待，扣除整体休息重叠；${c.startMs===null?'钟点为距全场开场的累计时长。':'钟点按当前设备本地时间显示。'}</p>`;
   }
   function renderCapacity(panel){
     const c=checked.config;
-    panel.innerHTML=`<p class="capacity-note">每行只调整本站的可同时测试人数或每批人数上限，其他参数保持不变。自动分批到场时，到场计划随人数上限重新计算；各行节省时长不能直接相加。</p><div class="table-scroll"><table class="result-table capacity-table"><thead><tr><th>测试站点</th><th>当前与试算人数上限</th><th>调整后的现场总时长</th><th>总时长变化</th><th>操作</th></tr></thead><tbody>${c.stations.map(s=>{const target=capacityTargets.get(s.inputIndex)??Math.min(Number(s.cap)+1,500);return `<tr data-capacity-row="${s.inputIndex}"><td>${esc(s.name)}<small>${s.kind==='batch'?'每批人数上限':'可同时测试人数'}</small></td><td><label class="capacity-target">${s.cap} 人调整为 <input type="number" data-capacity-target="${s.inputIndex}" value="${esc(target)}" min="1" max="500" step="1" aria-label="${esc(s.name)}试算人数上限"> 人</label></td><td data-capacity-after></td><td data-capacity-change></td><td><button class="text-button" data-capacity="${s.inputIndex}">应用调整</button></td></tr>`;}).join('')}</tbody></table></div>${undoSnapshot?'<div class="undo-area"><span>已应用一次人数上限调整</span><button class="text-button" id="undo-capacity">撤回上次调整</button></div>':''}`;
+    panel.innerHTML=`<p class="capacity-note">每行只调整本站的可同时测试人数或每批人数上限，其他参数保持不变。自动分批到场时，到场计划随人数上限重新计算；各行节省时长不能直接相加。</p><div class="table-scroll"><table class="result-table capacity-table"><thead><tr><th>测试站点</th><th>当前与试算人数上限</th><th>调整后的开场至收尾时长</th><th>总时长变化</th><th>操作</th></tr></thead><tbody>${c.stations.map(s=>{const target=capacityTargets.get(s.inputIndex)??Math.min(Number(s.cap)+1,500);return `<tr data-capacity-row="${s.inputIndex}"><td>${esc(s.name)}<small>${s.kind==='batch'?'每批人数上限':'可同时测试人数'}</small></td><td><label class="capacity-target">${s.cap} 人调整为 <input type="number" data-capacity-target="${s.inputIndex}" value="${esc(target)}" min="1" max="500" step="1" aria-label="${esc(s.name)}试算人数上限"> 人</label></td><td data-capacity-after></td><td data-capacity-change></td><td><button class="text-button" data-capacity="${s.inputIndex}">应用调整</button></td></tr>`;}).join('')}</tbody></table></div>${undoSnapshot?'<div class="undo-area"><span>已应用一次人数上限调整</span><button class="text-button" id="undo-capacity">撤回上次调整</button></div>':''}`;
     $$('[data-capacity-row]',panel).forEach(updateCapacityRow);
   }
   function renderStationOperations(){
@@ -355,7 +357,7 @@
     arrivalPage=Math.max(0,Math.min(arrivalPage,Math.ceil(rows.length/arrivalSize)-1));
     const note=c.arrivalMode==='auto'?`根据各组起始站点的预计开测安排分批就位；每批${c.arrivalBatchSize?'最多 '+c.arrivalBatchSize+' 人':'按起始站点的同时测试人数上限安排'}。建议提前 ${duration(c.arrivalLead)} 到场，用于签到、热身与现场说明。此准备时间不计入本站排队，后续站点的等待仍按排程计算。`:'当前采用全体集中到场，人员在开场准备后同时就位。切换为自动分批到场可以减少首站提前排队，并查看每批建议到场时刻。';
     const pages=Math.ceil(rows.length/arrivalSize);
-    panel.innerHTML=`<div class="arrival-note">${note}<button class="text-button" data-open-section="arrival-section">调整到场方式、每批人数与提前准备时间</button></div><div class="schedule-toolbar"><div class="schedule-controls"><label>每页显示<select id="arrival-size" aria-label="到场安排每页批次数">${options([25,50,100],arrivalSize,' 批')}</select></label><span class="schedule-caption">共 ${rows.length} 批、${c.n} 人</span></div><div class="pagination"><span>${rows.length?`${arrivalPage*arrivalSize+1}–${Math.min((arrivalPage+1)*arrivalSize,rows.length)} / ${rows.length}`:'0 批'}</span><button class="button" data-page="arrivals" data-delta="-1" ${arrivalPage===0?'disabled':''}>上一页</button><button class="button" data-page="arrivals" data-delta="1" ${arrivalPage>=pages-1?'disabled':''}>下一页</button></div></div><div class="table-scroll"><table class="result-table arrival-table"><thead><tr><th>到场批次</th><th>人员编号范围</th><th>到场人数</th><th>起始测试站点</th><th>建议到场时间</th><th>首站就位时间</th><th>本批首站开测时间</th></tr></thead><tbody>${rows.slice(arrivalPage*arrivalSize,(arrivalPage+1)*arrivalSize).map(b=>`<tr><td>第 ${b.batch} 批${b.group?'<small>第 '+b.group+' 组</small>':''}</td><td>${b.people[0]===b.people.at(-1)?`${b.people[0]} 号`:`${b.people[0]}–${b.people.at(-1)} 号`}</td><td>${b.count} 人</td><td>${esc(c.stations[b.station-1].name)}</td><td>${clock(b.report)}</td><td>${clock(b.ready)}</td><td>${clock(b.firstBegin)}${b.lastBegin!==b.firstBegin?' 至 '+clock(b.lastBegin):''}</td></tr>`).join('')}</tbody></table></div><p class="schedule-help">${c.startMs===null?'时间从全场开场起算；负数表示需要在开场前到场。填写开场日期与时间后，可显示实际钟点。':'到场和就位钟点按当前设备本地时间显示。'} 本表按设定时长与准时执行计算，调整测试方案后自动更新。</p>`;
+    panel.innerHTML=`<div class="arrival-note">${note}<button class="text-button" data-open-section="arrival-section">调整到场方式、每批人数与提前准备时间</button></div><div class="schedule-toolbar"><div class="schedule-controls"><label>每页显示<select id="arrival-size" aria-label="到场安排每页接待组数">${options([25,50,100],arrivalSize,' 组')}</select></label><span class="schedule-caption">共 ${r.arrivalWaveCount} 个到场波次、${rows.length} 个接待组、${c.n} 人</span></div><div class="pagination"><span>${rows.length?`${arrivalPage*arrivalSize+1}–${Math.min((arrivalPage+1)*arrivalSize,rows.length)} / ${rows.length}`:'0 批'}</span><button class="button" data-page="arrivals" data-delta="-1" ${arrivalPage===0?'disabled':''}>上一页</button><button class="button" data-page="arrivals" data-delta="1" ${arrivalPage>=pages-1?'disabled':''}>下一页</button></div></div><div class="table-scroll"><table class="result-table arrival-table"><thead><tr><th>到场波次 / 接待组</th><th>人员编号范围</th><th>到场人数</th><th>起始测试站点</th><th>建议到场时间</th><th>首站就位时间</th><th>本组首站开测时间</th></tr></thead><tbody>${rows.slice(arrivalPage*arrivalSize,(arrivalPage+1)*arrivalSize).map(b=>`<tr><td>第 ${b.wave} 波<small>接待组 ${b.batch}${b.group?' · 轮转组 '+b.group:''}</small></td><td>${b.people[0]===b.people.at(-1)?`${b.people[0]} 号`:`${b.people[0]}–${b.people.at(-1)} 号`}</td><td>${b.count} 人</td><td>${esc(c.stations[b.station-1].name)}</td><td>${clock(b.report)}</td><td>${clock(b.ready)}</td><td>${clock(b.firstBegin)}${b.lastBegin!==b.firstBegin?' 至 '+clock(b.lastBegin):''}</td></tr>`).join('')}</tbody></table></div><p class="schedule-help">${c.startMs===null?'时间从全场开场起算；负数表示需要在开场前到场。填写开场日期与时间后，可显示实际钟点。':'到场和就位钟点按当前设备本地时间显示。'} 同一建议到场时刻计一个波次；同刻分配到不同起始站点的人员保留为不同接待组。本表按设定时长与准时执行计算，调整方案后自动更新。</p>`;
   }
   function openExplanation(key){
     const info={
@@ -366,7 +368,7 @@
       maxWait:['最长单站等待时间','<p>取全体人员在所有站点中最长的一次等待，不把同一人的多站等待相加。它与人均累计等待时间分别反映极端等待和整体平均负担。</p><p>计算包含排队、凑批与统一换站等待，扣除整体休息；提前到场准备和最低离站间隔不计入。</p>'],
       waiting:['人均累计等待时间','<p>先把每个人在所有站点的等待时间相加，再除以测试人数。等待从个人完成上一站并满足最低离站间隔后算起，首站从本批就位时算起，到实际开测为止，扣除整体休息。排队、凑批和等待统一换站均计入。</p><p>提前到场准备、离站后的转场或恢复不计入本站等待。按首站人数上限分批且准时就位时，首站理论排队可为零，后续站点仍可能等待。卡片显示到整秒，导出保留小数秒。</p>'],
       queue:['预计峰值等待人数','<p>这是全场在同一时刻处于等待测试区间的不同人员数量最大值，包含排队、凑批和统一换站等待，可用于估算需要安排等待的人数。各站峰值出现在不同时刻时，不能把各站峰值直接相加。</p><p>以每人的等待区间逐时刻计算；同一时刻结束等待的人先移出，再加入新进入等待的人。计算扣除整体休息，不包含尚未完成的转场、恢复或提前到场准备。该数值不是现场总人数；统一换站时的等待人员也不一定都在下一站队列中。实际现场人数会受提前到场、迟到和测试耗时变化影响。</p>'],
-      arrivals:['集中到场与自动分批到场','<p>集中到场把所有人在开场准备结束后同时就位作为计算前提，大人数场景会产生较长的首站等待。</p><p>自动分批到场按首站既定开测顺序安排人员就位：每批人数留空时使用起始站点的人数上限；填写较大批次可减少到场批次数，但会增加首站排队。建议到场时刻为就位时刻减去提前准备时间。</p><p>该方式减少首站提前等待，保留当前人员顺序与测试时长；后续站点的排队仍按排程计算。它是基于当前方案的到场安排，不是对所有可能组织方式的全局最优解。</p>']
+      arrivals:['集中到场与自动分批到场','<p>集中到场把所有人在开场准备结束后同时就位作为计算前提，大人数场景会产生较长的首站等待。</p><p>自动分批到场按首站既定开测顺序安排人员就位：每批人数留空时使用起始站点的人数上限；填写较大批次可减少到场波次数，但会增加首站排队。建议到场时刻为就位时刻减去提前准备时间。</p><p>同一建议到场时刻计一个波次，分站接待组数另行展示。该方式减少首站提前等待，保留当前人员顺序与测试时长；后续站点的排队仍按排程计算。它是基于当前方案的到场安排，不是对所有可能组织方式的全局最优解。</p>']
     };
     const item=info[key];if(!item)return;$('#info-title').textContent=item[0];$('#info-content').innerHTML=item[1];$('#info-dialog').showModal();
   }
@@ -418,7 +420,7 @@
     const snap=TestFlow.stationSnapshot(checked,station,time);if(!snap)return;hideTooltip();
     $('#snapshot-title').textContent=snap.site.name+' · '+clock(snap.time);
     const unit=snap.site.kind==='batch'?'测试批次':'工位',rows=(list,testing)=>list.map(e=>`<tr><td>${personLabel(e.person)}${e.group?'<small>第 '+e.group+' 组</small>':''}</td><td>${unit} ${e.unit}</td><td>${clock(offset()+e.begin)}</td><td>${clock(offset()+e.end)}</td><td>${duration(round(testing?e.end-snap.relative:e.begin-snap.relative))}</td></tr>`).join('');
-    const table=(list,testing)=>`<div class="table-scroll"><table class="result-table snapshot-table"><thead><tr><th>人员</th><th>${unit}</th><th>实际开测时间</th><th>测试结束时间</th><th>${testing?'剩余测试时间':'距开测时间'}</th></tr></thead><tbody>${rows(list,testing)}</tbody></table></div>`;
+    const table=(list,testing)=>`<div class="table-scroll"><table class="result-table snapshot-table"><thead><tr><th>人员</th><th>${unit}</th><th>计划开测时间</th><th>测试结束时间</th><th>${testing?'剩余测试时间':'距开测时间'}</th></tr></thead><tbody>${rows(list,testing)}</tbody></table></div>`;
     $('#snapshot-content').innerHTML=`<p class="snapshot-state">${snap.status} · 正在测试 ${snap.active.length} 人 · 等待测试 ${snap.waiting.length} 人</p>${snap.pause?`<p class="arrival-note">${esc(snap.pause.name)}：${clock(snap.pause.start)} 至 ${clock(snap.pause.end)}。整体休息期间不计等待。</p>`:''}<h3>正在测试的人员</h3>${snap.active.length?table(snap.active,true):'<p class="snapshot-empty">此时没有人员正在本站测试。</p>'}<h3>等待本站测试的人员</h3>${snap.waiting.length?table(snap.waiting,false):'<p class="snapshot-empty">此时没有人员等待本站测试。</p>'}${snap.next.length?`<p class="schedule-help">下一次开测：${clock(snap.nextTime)}，${esc(peopleRange(snap.next.map(e=>e.person)))}。</p>`:''}<p class="schedule-help">等待包含排队、凑批及统一换站等待。人员、工位与时刻均按当前方案计算。</p>`;
     $('#snapshot-dialog').showModal();
   }
@@ -442,11 +444,11 @@
   function exportCsv(){
     recalculate();if(!checked.result)return;
     const cell=v=>'"'+String(v).replace(/"/g,'""')+'"',safe=v=>/^[\s]*[=+\-@]/.test(String(v))?"'"+v:v;
-    const r=checked.result,header=['记录类型','人员','小组','测试次序','站点或休息名称','工位或测试批次','最早可开测_累计秒','实际开始_累计秒','结束_累计秒','本站等待_秒','整体休息重叠_秒','实际开始_时间','结束_时间','到场批次','人员编号范围','到场人数','建议到场_累计秒','首站就位_累计秒','建议到场_时间','首站就位_时间'];
-    const rows=r.records.map(e=>['测试',e.person,e.group||'',e.visit,safe(e.name),e.unit,round(offset()+e.ready),round(offset()+e.begin),round(offset()+e.end),round(e.wait),round(e.breakWait),clock(offset()+e.begin,true),clock(offset()+e.end,true),...Array(7).fill('')]);
-    r.effectiveBreaks.forEach(b=>rows.push(['整体休息','','','',safe(b.name),'','',round(b.start),round(b.end),'','',clock(b.start,true),clock(b.end,true),...Array(7).fill('')]));
-    r.arrivalPlan.forEach(b=>rows.push(['到场安排','',b.group||'','',safe(checked.config.stations[b.station-1].name),'','',round(b.firstBegin),'','','',clock(b.firstBegin,true),'',b.batch,b.people[0]===b.people.at(-1)?String(b.people[0]):b.people[0]+'–'+b.people.at(-1),b.count,round(b.report),round(b.ready),clock(b.report,true),clock(b.ready,true)]));
-    download('\uFEFF'+[header,...rows].map(row=>row.map(cell).join(',')).join('\r\n'),'测试排程.csv','text/csv;charset=utf-8');toast(`已导出 ${r.records.length.toLocaleString('zh-CN')} 条测试排程、${r.arrivalPlan.length} 批到场安排${r.effectiveBreaks.length?'及 '+r.effectiveBreaks.length+' 段整体休息':''}`);
+    const r=checked.result,header=['记录类型','人员','小组','测试次序','站点或休息名称','工位或测试批次','最早可开测_累计秒','计划开始_累计秒','结束_累计秒','本站等待_秒','整体休息重叠_秒','计划开始_时间','结束_时间','到场波次','人员编号范围','到场人数','建议到场_累计秒','首站就位_累计秒','建议到场_时间','首站就位_时间','接待组编号'];
+    const rows=r.records.map(e=>['测试',e.person,e.group||'',e.visit,safe(e.name),e.unit,round(offset()+e.ready),round(offset()+e.begin),round(offset()+e.end),round(e.wait),round(e.breakWait),clock(offset()+e.begin,true),clock(offset()+e.end,true),...Array(8).fill('')]);
+    r.effectiveBreaks.forEach(b=>rows.push(['整体休息','','','',safe(b.name),'','',round(b.start),round(b.end),'','',clock(b.start,true),clock(b.end,true),...Array(8).fill('')]));
+    r.arrivalPlan.forEach(b=>rows.push(['到场安排','',b.group||'','',safe(checked.config.stations[b.station-1].name),'','',round(b.firstBegin),'','','',clock(b.firstBegin,true),'',b.wave,b.people[0]===b.people.at(-1)?String(b.people[0]):b.people[0]+'–'+b.people.at(-1),b.count,round(b.report),round(b.ready),clock(b.report,true),clock(b.ready,true),b.batch]));
+    download('\uFEFF'+[header,...rows].map(row=>row.map(cell).join(',')).join('\r\n'),'测试排程.csv','text/csv;charset=utf-8');toast(`已导出 ${r.records.length.toLocaleString('zh-CN')} 条测试排程、${r.arrivalWaveCount} 个到场波次、${r.arrivalPlan.length} 个接待组${r.effectiveBreaks.length?'及 '+r.effectiveBreaks.length+' 段整体休息':''}`);
   }
   function normalizePlan(raw){
     if(!raw||![2,3,4].includes(raw.version)||raw.timeUnit!=='sec'||!Array.isArray(raw.stations)||!['sec','mixed'].includes(raw.format))throw new Error('请载入本计算器保存的方案 JSON 文件');
@@ -455,9 +457,17 @@
     if(next.stations.some(s=>typeof s.name!=='string'||s.name.length>100))throw new Error('站点名称需为不超过 100 字的文本');
     if(typeof next.start!=='string')throw new Error('开场时间需为有效日期文本');
     const validation=TestFlow.validate(next);if(validation.errors.length)throw new Error(validation.errors.map(e=>e.message).join('；'));
+    if(raw.optimizerContext!==undefined)next.optimizerContext=normalizeOptimizerContext(raw.optimizerContext,next);
     return next;
   }
-  function usePlan(next){if(next.metricCards){metricCards=[...next.metricCards];saveInterface();}const {metricCards:importedCards,...parameters}=next;state=parameters;expandedStations.clear();expandedStations.add(0);arrivalPage=0;drafts.clear();timeErrors.clear();capacityTargets.clear();undoSnapshot=null;personStart=1;detailPage=0;filterStation=filterPerson='';zoom=1;renderStations();renderBreaks();syncControls();recalculate();}
+  function normalizeOptimizerContext(context,plan){
+    if(!context||context.version!==1||!context.options||typeof context.options!=='object'||Array.isArray(context.options)||!['unconfirmed','independent','shared'].includes(context.resource))throw new Error('方案中的优化条件版本或资源状态无效');
+    const options=TestFlowOptimizer.options(context.options),sites=TestFlow.validate(plan).config.stations,byIndex=new Map(sites.map(s=>[s.inputIndex,s]));
+    for(const range of options.capacityRanges){const site=byIndex.get(range.inputIndex);if(!site||range.max<site.cap)throw new Error('方案中的可用容量边界与站点参数不一致');}
+    options.capacityRanges=sites.map(s=>({inputIndex:s.inputIndex,max:options.capacityRanges.find(r=>r.inputIndex===s.inputIndex)?.max??s.cap}));
+    return {version:1,options,resource:context.resource};
+  }
+  function usePlan(next){if(next.metricCards){metricCards=[...next.metricCards];saveInterface();}const {metricCards:importedCards,optimizerContext,...parameters}=next;state=parameters;expandedStations.clear();expandedStations.add(0);arrivalPage=0;drafts.clear();timeErrors.clear();capacityTargets.clear();undoSnapshot=null;personStart=1;detailPage=0;filterStation=filterPerson='';zoom=1;renderStations();renderBreaks();syncControls();recalculate();if(optimizerContext)restoreOptimizerContext(optimizerContext);}
   function remapDrafts(prefix,mapIndex){
     for(const entries of [drafts,timeErrors]){
       const mapped=[];
@@ -538,15 +548,15 @@
     else if(t.id==='export-csv'){$('#export-dialog').showModal();}
     else if(t.id==='export-excel')exportWorkbook();
     else if(t.id==='export-raw-csv'){exportCsv();$('#export-dialog').close();}
-    else if(t.id==='save-plan'){recalculate();if(checked.result){download(JSON.stringify({...state,metricCards},null,2),'测试方案.json','application/json');toast('方案已保存');}}
+    else if(t.id==='save-plan'){recalculate();if(checked.result){download(JSON.stringify({...state,metricCards,optimizerContext:exportOptimizerContext()},null,2),'测试方案.json','application/json');toast('方案及优化条件已保存');}}
     else if(t.id==='load-plan')$('#import-file').click();
     else if(t.id==='help-open')$('#help-dialog').showModal();
     else if(t.id==='load-example')$('#confirm-dialog').showModal();
-    else if(t.id==='confirm-example'){$('#confirm-dialog').close();usePlan(initialPlan());toast('已载入初始方案');}
+    else if(t.id==='confirm-example'){$('#confirm-dialog').close();usePlan(initialPlan());toast('已载入演示方案；请按现场规程核实各项参数');}
   });
   $('#import-file').addEventListener('change',async e=>{
     const file=e.target.files[0];if(!file)return;
-    try{if(file.size>1000000)throw new Error('方案文件过大');usePlan(normalizePlan(JSON.parse(await file.text())));toast('方案已载入');}
+    try{if(file.size>1000000)throw new Error('方案文件过大');const next=normalizePlan(JSON.parse(await file.text()));usePlan(next);toast(next.optimizerContext?'方案已载入，优化条件已恢复；资源独立性需现场重新核实':'方案已载入；文件未包含优化条件，沿用本机目标与上限');}
     catch(error){toast('未载入：'+error.message);}finally{e.target.value='';}
   });
   $('#schedule-view').addEventListener('pointermove',e=>{
@@ -577,7 +587,9 @@
   document.addEventListener('toggle',e=>{if(e.target.matches('[data-row]')&&e.target.isConnected){const i=Number(e.target.dataset.row);if(e.target.open)expandedStations.add(i);else expandedStations.delete(i);}},{capture:true});
   $('#sidebar-backdrop').addEventListener('click',()=>setSidebar(false,true));
   try{if(innerWidth>=1100){const pref=localStorage.getItem('testflow-sidebar-open');if(pref!==null)sidebarOpen=pref==='true';}}catch{}
+  const startupOptimizerContext=state.optimizerContext;delete state.optimizerContext;
   renderStations();renderBreaks();syncControls();recalculate();setSidebar(sidebarOpen);
+  if(startupOptimizerContext)restoreOptimizerContext(startupOptimizerContext);
   const context=document.modelContext;
   if(context?.registerTool){
     const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
