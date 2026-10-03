@@ -24,7 +24,7 @@ def script_text(file):
 
 
 html = (source / 'head.html').read_text(encoding='utf-8')
-html += '\n<meta name="testflow-release" content="automatic-advice-20261002">\n'
+html += '\n<meta name="testflow-release" content="review-improvements-20261003">\n'
 css = '\n'.join((source / name).read_text(encoding='utf-8') for name in ['testflow.css', 'testflow-capacity.css', 'testflow-optimizer.css', 'testflow-auto-advice.css'])
 html += '<style>\n' + css + '\n</style>\n</head>\n<body>\n'
 html += (source / 'testflow-body.html').read_text(encoding='utf-8')
@@ -36,7 +36,7 @@ onmessage = async event => {
     const p = event.data;
     let result;
     if (p.action === 'manual') result = TestFlowOptimizer.manual(p.raw, p.targets, p.options, p.base);
-    else if (p.action === 'stress') result = TestFlowOptimizer.stress(p.raw, p.row, p.percent, p.options);
+    else if (p.action === 'stress') result = TestFlowOptimizer.stress(p.raw, p.row, p.percent, p.options, p.arrivalPolicy);
     else if (!p.action || p.action === 'search') result = await TestFlowOptimizer.searchAsync(p.raw, p.options, {
       progress: (done, total) => postMessage({type: 'progress', done, total})
     });
@@ -50,5 +50,5 @@ onmessage = async event => {
 html += '\n<script type="application/json" id="testflow-optimizer-worker">' + json.dumps(worker, ensure_ascii=False).replace('<', '\\u003c') + '</script>\n'
 html += ''.join('\n<script>\n' + script_text(file) + '\n</script>\n' for file in scripts)
 html += '\n</body>\n</html>\n'
-(root / 'index.html').write_text(html, encoding='utf-8')
+(root / 'index.html').write_text(html, encoding='utf-8', newline='\n')
 print('Built index.html:', len(html.encode()), 'bytes')

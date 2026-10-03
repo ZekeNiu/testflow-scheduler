@@ -1,0 +1,698 @@
+{
+  "baselineCommit": "77968a2ee21599ae408b6610b8bfdf36a11ba3d2",
+  "branch": "codex/testflow-review-improvements",
+  "timestamp": "2026-10-03T10:42:43.060906+00:00",
+  "checks": [
+    {
+      "command": [
+        "python",
+        "build.py"
+      ],
+      "exitCode": 0,
+      "stdout": "Built index.html: 378312 bytes\n",
+      "stderr": "",
+      "seconds": 0.102
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "test"
+      ],
+      "exitCode": 0,
+      "stdout": "\n> testflow-scheduler@1.0.0 test\n> node tests/arrivals.cjs && node tests/waiting.cjs && node tests/snapshot.cjs && node tests/capacity-diagnostics.cjs && node tests/optimizer.cjs && node tests/unified-optimizer.cjs && node tests/auto-advice.cjs && node tests/review-regressions.cjs\n\n{\"passed\":132,\"randomArrivals\":120,\"largeCaseMs\":46,\"fourHundredPeople\":{\"allMeanWaitSeconds\":2985,\"autoMeanWaitSeconds\":0,\"allPeak\":398,\"autoPeak\":0,\"autoBatches\":200}}\n{\"passed\":186,\"independentJourneyCases\":180,\"collective400\":{\"peakWaiting\":320,\"meanWaitSeconds\":20},\"restRecoveryOverlap\":{\"peakWaiting\":160,\"meanWaitSeconds\":6}}\nStation snapshot boundaries, queues, pauses and batches passed.\n{\"capacityDiagnosticCases\":172,\"randomCases\":160,\"waitOnly\":62,\"worsening\":33,\"largeCaseMs\":200}\n{\"optimizerCases\":107,\"oracleCases\":90,\"largeConfigurations\":44,\"largeElapsedMs\":720}\n{\"unifiedOptimizerChecks\":35,\"checks\":[\"Hand-calculated common bottleneck: 40 minutes unchanged singly, 20 jointly\",\"Resource permissions and zero station-change allowance\",\"Manual joint changes use the same metrics, limits and immutable baseline\",\"Single-person cumulative waiting differs from longest single-station waiting\",\"Duration stress compares both full plans under the same declared scenario\",\"Bounded sampling cannot claim exhaustive optimality; joint probes are retained\",\"Search range and maximum-count inputs are validated\",\"Negligible improvement does not become the default recommendation\",\"Impossible limits remain impossible for automatic and manual evaluation\",\"Independent capacity/organization Cartesian oracle 0\",\"Independent capacity/organization Cartesian oracle 1\",\"Independent capacity/organization Cartesian oracle 2\",\"Independent capacity/organization Cartesian oracle 3\",\"Independent capacity/organization Cartesian oracle 4\",\"Independent capacity/organization Cartesian oracle 5\",\"Independent capacity/organization Cartesian oracle 6\",\"Independent capacity/organization Cartesian oracle 7\",\"Independent capacity/organization Cartesian oracle 8\",\"Independent capacity/organization Cartesian oracle 9\",\"Independent capacity/organization Cartesian oracle 10\",\"Independent capacity/organization Cartesian oracle 11\",\"Independent capacity/organization Cartesian oracle 12\",\"Independent capacity/organization Cartesian oracle 13\",\"Independent capacity/organization Cartesian oracle 14\",\"Independent capacity/organization Cartesian oracle 15\",\"Independent capacity/organization Cartesian oracle 16\",\"Independent capacity/organization Cartesian oracle 17\",\"Independent capacity/organization Cartesian oracle 18\",\"Independent capacity/organization Cartesian oracle 19\",\"Independent capacity/organization Cartesian oracle 20\",\"Independent capacity/organization Cartesian oracle 21\",\"Independent capacity/organization Cartesian oracle 22\",\"Independent capacity/organization Cartesian oracle 23\",\"Asynchronous parity\",\"Cancellation does not certify partial comparisons\"]}\n{\"autoAdviceControllerChecks\":24}\nPASS Manual trials honor automatic groups and the engine arrival default\nPASS Snapshots retain hidden candidate inputs while ignoring presentation and backup context\nPASS Async results and candidate rows bind to one immutable input snapshot\nPASS Simultaneous reception records count as one arrival wave\nPASS Automatic arrival waves deduplicate simultaneous groups at millisecond precision\nPASS Reception coverage includes early arrivals without changing the opening duration\nPASS Onsite headcount is an optional integer hard limit in automatic and manual trials\nPASS The default budget reaches the final two-site joint probe before organizational expansion\nPASS A retained default still exposes meaningful secondary benefits with their arrival cost\nPASS Fixed-notice stress preserves report and ready times instead of rebuilding the arrival plan\nPASS Frozen arrivals preserve full services, reset, recovery and collective breaks\n{\"reviewRegressionChecks\":11,\"failed\":0}\n",
+      "stderr": "",
+      "seconds": 3.172
+    },
+    {
+      "command": [
+        "python",
+        "tests/export-regressions.py"
+      ],
+      "exitCode": 0,
+      "stdout": "XLSX regression checks passed: 10 workbooks, DST/Shanghai/1900/elapsed/fractional/waves, independent formula recomputation.\n",
+      "stderr": "",
+      "seconds": 0.74
+    },
+    {
+      "command": [
+        "python",
+        "tests/unified-browser.py"
+      ],
+      "exitCode": 0,
+      "stdout": "PASS: Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\nPASS: Default fixed-capacity worker comparison, complete metrics and no plan mutation\nPASS: Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\nPASS: Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\nPASS: Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions\nPASS: Invalid manual drafts persist across views and cannot exceed available resources\nPASS: Duration scenario compares both plans, invalidates edited results and never changes nominal parameters\nPASS: Known shared resources block unsupported recommendations rather than implying feasibility\nPASS: Bounded-search honesty and persistent invalid preference drafts\nPASS: Actual plan edits invalidate results and reset index-scoped resource bounds\nPASS: Undo cannot overwrite subsequent actual plan edits\nPASS: Single advisory dismissal survives preferences, trials, tab changes and real localStorage reload\nPASS: Overall-rest semantics remain protected across organizational alternatives\nPASS: Large calculations remain cancellable without stale result application\nPASS: JSON save, complete CSV export and styled four-sheet XLSX export are preserved\nPASS: All existing result views and keyboard station snapshots remain functional\nPASS: Fitting comparison tables keep the header above the first row without a nested-scroll offset\nPASS: Automatic/manual/confirmation layout without page overflow at 320px\nPASS: Automatic/manual/confirmation layout without page overflow at 390px\nPASS: Automatic/manual/confirmation layout without page overflow at 768px\nPASS: Automatic/manual/confirmation layout without page overflow at 1024px\nPASS: Automatic/manual/confirmation layout without page overflow at 1280px\nPASS: No-worker fallback and unavailable-storage operation remain usable\nPASS: Keyboard dismissal restores focus; view preferences and invalid repair preserve it, valid changes reset it\nPASS: Escaped station names, disabled indices, atomic targeting and batch-versus-workstation wording\nPASS: Old optimization preferences migrate read-only without changing legacy keys or the saved plan\nPASS: Browser restart with the same real disk profile preserves plan, metrics, dismissal and optimizer preferences\n{\"unifiedBrowserChecks\": 27, \"storageMode\": \"real\", \"checks\": [\"Single optimization tab, factual station table, one coordinated advisory card and keyboard navigation\", \"Default fixed-capacity worker comparison, complete metrics and no plan mutation\", \"Preview cancellation, explicit protocol confirmation, application consistency, cross-view undo\", \"Joint bottleneck improvement, conservative capacity defaults and atomic multi-station undo\", \"Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions\", \"Invalid manual drafts persist across views and cannot exceed available resources\", \"Duration scenario compares both plans, invalidates edited results and never changes nominal parameters\", \"Known shared resources block unsupported recommendations rather than implying feasibility\", \"Bounded-search honesty and persistent invalid preference drafts\", \"Actual plan edits invalidate results and reset index-scoped resource bounds\", \"Undo cannot overwrite subsequent actual plan edits\", \"Single advisory dismissal survives preferences, trials, tab changes and real localStorage reload\", \"Overall-rest semantics remain protected across organizational alternatives\", \"Large calculations remain cancellable without stale result application\", \"JSON save, complete CSV export and styled four-sheet XLSX export are preserved\", \"All existing result views and keyboard station snapshots remain functional\", \"Fitting comparison tables keep the header above the first row without a nested-scroll offset\", \"Automatic/manual/confirmation layout without page overflow at 320px\", \"Automatic/manual/confirmation layout without page overflow at 390px\", \"Automatic/manual/confirmation layout without page overflow at 768px\", \"Automatic/manual/confirmation layout without page overflow at 1024px\", \"Automatic/manual/confirmation layout without page overflow at 1280px\", \"No-worker fallback and unavailable-storage operation remain usable\", \"Keyboard dismissal restores focus; view preferences and invalid repair preserve it, valid changes reset it\", \"Escaped station names, disabled indices, atomic targeting and batch-versus-workstation wording\", \"Old optimization preferences migrate read-only without changing legacy keys or the saved plan\", \"Browser restart with the same real disk profile preserves plan, metrics, dismissal and optimizer preferences\"], \"pageErrors\": []}\n",
+      "stderr": "",
+      "seconds": 38.853
+    },
+    {
+      "command": [
+        "python",
+        "tests/auto-advice-browser.py"
+      ],
+      "exitCode": 0,
+      "stdout": "PASS: Opening a valid plan automatically analyzes it without visiting the optimizer or expanding permissions\nPASS: No-change verdict and concrete hypothetical capacity opportunity are shown directly without unsafe application\nPASS: Detail page, views, zoom, metric choices and resize reuse the completed analysis without recalculation\nPASS: Concrete savings and direct preview/confirmation work from the results page; application and full undo remain explicit\nPASS: Rapid input is debounced into one analysis of the final plan without moving keyboard focus\nPASS: Invalid plan input removes stale actionable advice; repairing it automatically resumes analysis\nPASS: Goal and acceptable-limit edits automatically refresh both the summary and detailed result\nPASS: Automatic completion does not reset manual drafts, steal focus, overwrite manual results or apply trial parameters\nPASS: Known shared resources stop unsupported automatic recommendations; valid resource changes resume analysis\nPASS: Invalid optimization drafts cannot expose old advice and recover automatically when corrected\nPASS: Dismissal survives automatic results, preference changes and reload; only actual plan changes reset it\nPASS: Large automatic analyses can be paused; views do not restart them, and subsequent plan edits do\nPASS: Automatic analysis works when Worker is unavailable or construction fails\nPASS: Advice and direct confirmation retain responsive layouts at 320, 390, 768 and 1280 pixels\n{\"automaticAdviceBrowserChecks\": 14, \"checks\": [\"Opening a valid plan automatically analyzes it without visiting the optimizer or expanding permissions\", \"No-change verdict and concrete hypothetical capacity opportunity are shown directly without unsafe application\", \"Detail page, views, zoom, metric choices and resize reuse the completed analysis without recalculation\", \"Concrete savings and direct preview/confirmation work from the results page; application and full undo remain explicit\", \"Rapid input is debounced into one analysis of the final plan without moving keyboard focus\", \"Invalid plan input removes stale actionable advice; repairing it automatically resumes analysis\", \"Goal and acceptable-limit edits automatically refresh both the summary and detailed result\", \"Automatic completion does not reset manual drafts, steal focus, overwrite manual results or apply trial parameters\", \"Known shared resources stop unsupported automatic recommendations; valid resource changes resume analysis\", \"Invalid optimization drafts cannot expose old advice and recover automatically when corrected\", \"Dismissal survives automatic results, preference changes and reload; only actual plan changes reset it\", \"Large automatic analyses can be paused; views do not restart them, and subsequent plan edits do\", \"Automatic analysis works when Worker is unavailable or construction fails\", \"Advice and direct confirmation retain responsive layouts at 320, 390, 768 and 1280 pixels\"], \"pageErrors\": []}\n",
+      "stderr": "",
+      "seconds": 30.473
+    },
+    {
+      "command": [
+        "python",
+        "tests/review-browser.py"
+      ],
+      "exitCode": 0,
+      "stdout": "PASS: Hidden lead changes invalidate cached candidates and confirmation uses 840 seconds / 7 people\nPASS: Shared resources remain blocked after participant/mode edits and reload\nPASS: Automatic group count supports manual joint capacity trials, confirmation and undo\nPASS: A shared-resource declaration made after application survives undo and keeps analysis blocked\nPASS: Two reception groups at one instant count as one arrival wave and satisfy limit one\nPASS: Onsite limit checks candidates, rejects fractions and restores valid analysis\nPASS: Meaningful secondary benefits and their arrival cost appear directly and open a full comparison\nPASS: Fixed-notice duration stress reports 30 seconds waiting while replanning reports zero\nPASS: Early attendance displays a 310-second coverage window for a 10-second task\nPASS: JSON restores optimization context, preserves shared blocks, rechecks independence and rejects invalid imports atomically\nPASS: Invalid actual inputs disable export/application, survive reload and recover after repair\nPASS: Real HTTP page has no document overflow at 360 / 390 / 768 / 1100 / 1440 pixels\nPASS: Offline file startup analyzes automatically and exports JSON context, XLSX and CSV without external requests\n{\"reviewBrowserChecks\": 13, \"failed\": 0, \"pageErrors\": [], \"workersCreated\": 23, \"result\": \"<checkout>\\\\test-results\\\\review-browser.json\"}\n",
+      "stderr": "",
+      "seconds": 25.707
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'build.py', LF will be replaced by CRLF the next time Git touches it\n",
+      "seconds": 0.058
+    },
+    {
+      "command": [
+        "python",
+        "build.py"
+      ],
+      "exitCode": 0,
+      "stdout": "Built index.html: 378312 bytes\n",
+      "stderr": "",
+      "seconds": 0.056
+    }
+  ],
+  "deterministicBuild": true,
+  "indexSha256": "b321686f59b7471ca8c1845eb02ba207ea6c40dadfb66c7e2c8b91405dd446a3",
+  "browserAcceptance": {
+    "reviewBrowserChecks": 13,
+    "failed": 0,
+    "checks": [
+      "Hidden lead changes invalidate cached candidates and confirmation uses 840 seconds / 7 people",
+      "Shared resources remain blocked after participant/mode edits and reload",
+      "Automatic group count supports manual joint capacity trials, confirmation and undo",
+      "A shared-resource declaration made after application survives undo and keeps analysis blocked",
+      "Two reception groups at one instant count as one arrival wave and satisfy limit one",
+      "Onsite limit checks candidates, rejects fractions and restores valid analysis",
+      "Meaningful secondary benefits and their arrival cost appear directly and open a full comparison",
+      "Fixed-notice duration stress reports 30 seconds waiting while replanning reports zero",
+      "Early attendance displays a 310-second coverage window for a 10-second task",
+      "JSON restores optimization context, preserves shared blocks, rechecks independence and rejects invalid imports atomically",
+      "Invalid actual inputs disable export/application, survive reload and recover after repair",
+      "Real HTTP page has no document overflow at 360 / 390 / 768 / 1100 / 1440 pixels",
+      "Offline file startup analyzes automatically and exports JSON context, XLSX and CSV without external requests"
+    ],
+    "failures": [],
+    "pageErrors": [],
+    "evidence": {
+      "origin": "real localhost HTTP",
+      "indexSha256": "b321686f59b7471ca8c1845eb02ba207ea6c40dadfb66c7e2c8b91405dd446a3",
+      "hiddenLead": {
+        "beforeMeanOnsite": 540,
+        "beforePeak": 5,
+        "afterMeanOnsite": 840,
+        "afterPeak": 7
+      },
+      "stress": {
+        "percent": 50,
+        "fixedMeanWait": 30,
+        "replanMeanWait": 0
+      },
+      "coverage": {
+        "openingToClose": 10,
+        "firstArrival": -300,
+        "coverageSeconds": 310
+      },
+      "backup": {
+        "sharedPreserved": true,
+        "existingSharedCannotBeClearedByImport": true,
+        "independentRequiresRecheck": true,
+        "invalidImportsAtomic": 4,
+        "legacyVersion": 3
+      },
+      "responsive": [
+        {
+          "width": 360,
+          "scroll": 360
+        },
+        {
+          "width": 390,
+          "scroll": 390
+        },
+        {
+          "width": 768,
+          "scroll": 768
+        },
+        {
+          "width": 1100,
+          "scroll": 1100
+        },
+        {
+          "width": 1440,
+          "scroll": 1440
+        }
+      ],
+      "offline": {
+        "scheme": "file",
+        "automaticAnalysisReady": true,
+        "jsonContext": true,
+        "xlsxSheets": 4,
+        "csvRows": 133,
+        "externalRequests": []
+      },
+      "workersCreated": 23
+    }
+  },
+  "nativeExcel": {
+    "excelVersion": "16.0",
+    "workbookCount": 10,
+    "timestamp": "2026-10-03T10:31:42.7692463Z",
+    "passed": true,
+    "workbooks": [
+      {
+        "checks": [
+          {
+            "expected": 22.0,
+            "cell": "F17",
+            "formula": "=22/86400",
+            "sheet": "排程总览",
+            "value": 21.999999999999996
+          },
+          {
+            "expected": 0.6818181818181818,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.6818181818181819
+          },
+          {
+            "expected": 10.0,
+            "cell": "J6",
+            "formula": "=10/86400",
+            "sheet": "人员排程",
+            "value": 10.0
+          },
+          {
+            "expected": 202.0,
+            "cell": "B6",
+            "formula": "0.00233796296296296",
+            "sheet": "排程总览",
+            "value": 202.00000000000003
+          },
+          {
+            "expected": 262.0,
+            "cell": "B7",
+            "formula": "0.00303240740740741",
+            "sheet": "排程总览",
+            "value": 262.0
+          },
+          {
+            "expected": 442.0,
+            "cell": "D12",
+            "formula": "0.00511574074074074",
+            "sheet": "排程总览",
+            "value": 442.0
+          }
+        ],
+        "passed": true,
+        "name": "batch-tail"
+      },
+      {
+        "checks": [
+          {
+            "expected": 3600.0,
+            "cell": "F17",
+            "formula": "=3600/86400",
+            "sheet": "排程总览",
+            "value": 3600.0
+          },
+          {
+            "expected": 1.0,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 1.0
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 3720.0,
+            "cell": "B6",
+            "formula": "0.0430555555555556",
+            "sheet": "排程总览",
+            "value": 3720.0
+          },
+          {
+            "expected": 3780.0,
+            "cell": "B7",
+            "formula": "0.04375",
+            "sheet": "排程总览",
+            "value": 3779.9999999999995
+          },
+          {
+            "expected": 3720.0,
+            "cell": "D12",
+            "formula": "0.0430555555555556",
+            "sheet": "排程总览",
+            "value": 3720.0
+          }
+        ],
+        "passed": true,
+        "name": "before-1900"
+      },
+      {
+        "checks": [
+          {
+            "expected": 7500.0,
+            "cell": "F17",
+            "formula": "=7500/86400",
+            "sheet": "排程总览",
+            "value": 7500.0
+          },
+          {
+            "expected": 0.96,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.96
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 7680.0,
+            "cell": "B6",
+            "formula": "0.0888888888888889",
+            "sheet": "排程总览",
+            "value": 7680.0
+          },
+          {
+            "expected": 7740.0,
+            "cell": "B7",
+            "formula": "0.0895833333333333",
+            "sheet": "排程总览",
+            "value": 7740.0
+          },
+          {
+            "expected": 7920.0,
+            "cell": "D12",
+            "formula": "0.0916666666666667",
+            "sheet": "排程总览",
+            "value": 7919.999999999999
+          }
+        ],
+        "passed": true,
+        "name": "elapsed"
+      },
+      {
+        "checks": [
+          {
+            "expected": 3600.0,
+            "cell": "F17",
+            "formula": "=3600/86400",
+            "sheet": "排程总览",
+            "value": 3600.0
+          },
+          {
+            "expected": 1.0,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 1.0
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 3720.0,
+            "cell": "B6",
+            "formula": "0.0430555555555556",
+            "sheet": "排程总览",
+            "value": 3720.0
+          },
+          {
+            "expected": 3780.0,
+            "cell": "B7",
+            "formula": "0.04375",
+            "sheet": "排程总览",
+            "value": 3779.9999999999995
+          },
+          {
+            "expected": 3720.0,
+            "cell": "D12",
+            "formula": "0.0430555555555556",
+            "sheet": "排程总览",
+            "value": 3720.0
+          }
+        ],
+        "passed": true,
+        "name": "excel-1900"
+      },
+      {
+        "checks": [
+          {
+            "expected": 7500.0,
+            "cell": "F17",
+            "formula": "=7500/86400",
+            "sheet": "排程总览",
+            "value": 7500.0
+          },
+          {
+            "expected": 0.96,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.96
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 7680.0,
+            "cell": "B6",
+            "formula": "0.0888888888888889",
+            "sheet": "排程总览",
+            "value": 7680.0
+          },
+          {
+            "expected": 7740.0,
+            "cell": "B7",
+            "formula": "0.0895833333333333",
+            "sheet": "排程总览",
+            "value": 7740.0
+          },
+          {
+            "expected": 7920.0,
+            "cell": "D12",
+            "formula": "0.0916666666666667",
+            "sheet": "排程总览",
+            "value": 7919.999999999999
+          }
+        ],
+        "passed": true,
+        "name": "fall-dst"
+      },
+      {
+        "checks": [
+          {
+            "expected": 92.125,
+            "cell": "F17",
+            "formula": "=92.125/86400",
+            "sheet": "排程总览",
+            "value": 92.125
+          },
+          {
+            "expected": 0.9810040705563093,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.9810040705563093
+          },
+          {
+            "expected": 30.125,
+            "cell": "J6",
+            "formula": "=30.125/86400",
+            "sheet": "人员排程",
+            "value": 30.125
+          },
+          {
+            "expected": 109.875,
+            "cell": "B6",
+            "formula": "0.00127170138888889",
+            "sheet": "排程总览",
+            "value": 109.875
+          },
+          {
+            "expected": 111.125,
+            "cell": "B7",
+            "formula": "0.00128616898148148",
+            "sheet": "排程总览",
+            "value": 111.125
+          },
+          {
+            "expected": 125.125,
+            "cell": "D12",
+            "formula": "0.00144820601851852",
+            "sheet": "排程总览",
+            "value": 125.125
+          }
+        ],
+        "passed": true,
+        "name": "fractional"
+      },
+      {
+        "checks": [
+          {
+            "expected": 7500.0,
+            "cell": "F17",
+            "formula": "=7500/86400",
+            "sheet": "排程总览",
+            "value": 7500.0
+          },
+          {
+            "expected": 0.96,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.96
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 7680.0,
+            "cell": "B6",
+            "formula": "0.0888888888888889",
+            "sheet": "排程总览",
+            "value": 7680.0
+          },
+          {
+            "expected": 7740.0,
+            "cell": "B7",
+            "formula": "0.0895833333333333",
+            "sheet": "排程总览",
+            "value": 7740.0
+          },
+          {
+            "expected": 7680.0,
+            "cell": "D12",
+            "formula": "0.0888888888888889",
+            "sheet": "排程总览",
+            "value": 7680.0
+          }
+        ],
+        "passed": true,
+        "name": "late-first-arrival"
+      },
+      {
+        "checks": [
+          {
+            "expected": 30.0,
+            "cell": "F17",
+            "formula": "=30/86400",
+            "sheet": "排程总览",
+            "value": 30.0
+          },
+          {
+            "expected": 1.0,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 1.0
+          },
+          {
+            "expected": 10.0,
+            "cell": "J6",
+            "formula": "=10/86400",
+            "sheet": "人员排程",
+            "value": 10.0
+          },
+          {
+            "expected": 210.0,
+            "cell": "B6",
+            "formula": "0.00243055555555556",
+            "sheet": "排程总览",
+            "value": 210.0
+          },
+          {
+            "expected": 270.0,
+            "cell": "B7",
+            "formula": "0.003125",
+            "sheet": "排程总览",
+            "value": 270.0
+          },
+          {
+            "expected": 210.0,
+            "cell": "D12",
+            "formula": "0.00243055555555556",
+            "sheet": "排程总览",
+            "value": 210.0
+          }
+        ],
+        "passed": true,
+        "name": "rotation"
+      },
+      {
+        "checks": [
+          {
+            "expected": 7500.0,
+            "cell": "F17",
+            "formula": "=7500/86400",
+            "sheet": "排程总览",
+            "value": 7500.0
+          },
+          {
+            "expected": 0.96,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.96
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 7680.0,
+            "cell": "B6",
+            "formula": "0.0888888888888889",
+            "sheet": "排程总览",
+            "value": 7680.0
+          },
+          {
+            "expected": 7740.0,
+            "cell": "B7",
+            "formula": "0.0895833333333333",
+            "sheet": "排程总览",
+            "value": 7740.0
+          },
+          {
+            "expected": 7920.0,
+            "cell": "D12",
+            "formula": "0.0916666666666667",
+            "sheet": "排程总览",
+            "value": 7919.999999999999
+          }
+        ],
+        "passed": true,
+        "name": "shanghai"
+      },
+      {
+        "checks": [
+          {
+            "expected": 7500.0,
+            "cell": "F17",
+            "formula": "=7500/86400",
+            "sheet": "排程总览",
+            "value": 7500.0
+          },
+          {
+            "expected": 0.96,
+            "cell": "G17",
+            "formula": "=K17/(B17*F17)",
+            "sheet": "排程总览",
+            "value": 0.96
+          },
+          {
+            "expected": 3600.0,
+            "cell": "J6",
+            "formula": "=3600/86400",
+            "sheet": "人员排程",
+            "value": 3600.0
+          },
+          {
+            "expected": 7680.0,
+            "cell": "B6",
+            "formula": "0.0888888888888889",
+            "sheet": "排程总览",
+            "value": 7680.0
+          },
+          {
+            "expected": 7740.0,
+            "cell": "B7",
+            "formula": "0.0895833333333333",
+            "sheet": "排程总览",
+            "value": 7740.0
+          },
+          {
+            "expected": 7920.0,
+            "cell": "D12",
+            "formula": "0.0916666666666667",
+            "sheet": "排程总览",
+            "value": 7919.999999999999
+          }
+        ],
+        "passed": true,
+        "name": "spring-dst"
+      }
+    ],
+    "cellChecks": 60
+  },
+  "sha256": {
+    "src/head.html": "c6b45e68b7bd5f689c9434497feb503e885671a6adde0a4ea43f9bf63fbe2ba8",
+    "src/testflow-auto-advice-ui.js": "61239300572d18dfd03dc73c846be4e9393d9771653a3b6208f2994c2ecd292b",
+    "src/testflow-auto-advice.css": "a42065660b31ff32ead78c39c0b696f14b94a1c3de36f9fddceb6fb147ab4bb6",
+    "src/testflow-auto-advice.js": "4bf92f4f1f37ac3d542cfc86138058d6c23d23623ef351c342bd983467dd5440",
+    "src/testflow-body.html": "e791fbced8a3d0ecc3f25100766fa13b18648cb786bccd5a5777a24709da1f41",
+    "src/testflow-capacity-ui.js": "a99b6a2d36d0d05573af7f3a412776d359932a66d6e874c62de2c4006615d50c",
+    "src/testflow-capacity.css": "2baf7eb7446f19f67760636ededa671ca09f425b3d236a9a0056f59b6481d561",
+    "src/testflow-diagnostics.js": "9c902b23159354798ad4d0b50f4ff1e30c98ab60fa1d629a0564ac8d5ee2e8f9",
+    "src/testflow-engine.js": "3b8f579e51503ed587a3625107febafd9f0021731ed9096e77ae953c1578188c",
+    "src/testflow-export.js": "66b071872338833e490ce0fac7510ac0acc5ca846156973113cf3a3989ae0af3",
+    "src/testflow-optimizer-ui.js": "7ae3cd274bec21c8b76989584779469a55e0618d81d590c4eed0e44e6406d5f5",
+    "src/testflow-optimizer.css": "4876b8345f0b3f8db8b8b62381a96e890dbce2a88c0012019719046346faf4ff",
+    "src/testflow-optimizer.js": "bf155230dd505982da812bcdb9f5d4e48741bb1c8da1c29c1a31abce38ca2a16",
+    "src/testflow-persistence.js": "5c20830023cf02b9c4dc2049325b33dfa076b876a0f5329006ee8d86fe1008ea",
+    "src/testflow-ui.js": "348f97a2adee2c17beadafd986c2142cc84387455ffa71e17b06a76431a8c2bd",
+    "src/testflow-xlsx-template.js": "b092fdd834e8670a99bf36855b6a5a5b2640e3e284d738f6bca2f8168e189d61",
+    "src/testflow.css": "99ead68c427c5ac53e37cbc1e468fa9c0bcb1eba25a7fb2dd1d396bcef4839fa",
+    "tests/arrivals.cjs": "ad368a70c809aabc63b5dfe31324ab2c0fe5fd700bd357ed60551f522755e3a7",
+    "tests/auto-advice-browser.py": "d0920e8ca50806cc4849e9a80bc8ba75d6a15015c538603a0367a3c0827a8874",
+    "tests/auto-advice.cjs": "a90eb45117cc06b871d803be3587141281498df352194829a9b783dacdf368c2",
+    "tests/capacity-browser.py": "ecb48f5a314280bff60433d4e2e22be7c0f3967f6f3d3ee79cb4e899be6a8b46",
+    "tests/capacity-diagnostics.cjs": "7e83c5612cd015c3cf76ad922f39add197dfa3530a63599ba667903a16303118",
+    "tests/capacity-preferences.py": "4140ad257278354decdf677e6998865ed82b9ea8d858cd907012f673a0b244d1",
+    "tests/export-regressions.py": "eacd255cacc8cb08cd168bffdce640220d8c6037d5afd2d626ddfe7031e15b89",
+    "tests/native-excel.ps1": "2c958190e876f33aed75d0b92f089024b6c4d00f32c90d41440966c6f277c0f1",
+    "tests/optimizer-browser.py": "1d2692254feb28f19a545140bd0f5572d4381861764d4b0f4fddebb0eae60102",
+    "tests/optimizer.cjs": "92f0e922c033d9e61851ebd8a5e177de1cd2e1b8cd856a2269af306be2bb0200",
+    "tests/review-browser.py": "dae6e630bc9c22e04b044ec5eee33c2b1615719efd65bd6e2664aae3d5db59cf",
+    "tests/review-regressions.cjs": "69fecaf87f1f37991b06441f4617a10d62b33c7489b302645ce8fd9b64416550",
+    "tests/snapshot.cjs": "abf33f81e40fef7424f59648a715140cf293a958e2e57f6e6c693a04e0757a86",
+    "tests/unified-browser.py": "716d1d90efb7363e3dd02ec0b131baa6c5cb9397e763d23502b8feb07cf490b5",
+    "tests/unified-optimizer.cjs": "535971a6d0a86f4d2fd16a4f907bce1f7bcc0f8d22cb34d834af111c9bbd2679",
+    "tests/waiting.cjs": "c31a9186c8d90abe9163d21ba51b26de8127afec21e54bc57e8ba6b169915ffb",
+    "build.py": "3bc5a7779d65e9b5b95760e92ce1d33eca4e82cf6d0a7ef90463607539ad415b",
+    "package.json": "86b1f2400a58065feef1dc6c49acdb8270cc6b1420d4e5a4a9a4fb37c00eb3bb",
+    "index.html": "b321686f59b7471ca8c1845eb02ba207ea6c40dadfb66c7e2c8b91405dd446a3"
+  },
+  "passed": true,
+  "validationBoundary": "No field prediction-versus-actual observations; Chromium desktop automation only, no real mobile devices or full browser matrix."
+}

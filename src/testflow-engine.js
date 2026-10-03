@@ -78,10 +78,21 @@
     const sites = c.stations.map(s => ({...s,d:Math.round(s.d*1000),z:Math.round(s.z*1000),gapSec:Math.round(s.gapSec*1000)}));
     const available = sites.map(s => Array(s.kind === 'independent' ? s.cap : 1).fill(0));
     const batches = sites.map(() => 0), previous = Array(n).fill(0), previousSite = Array(n).fill(-1), records = [], restSegments=[];
-    const initialReady=Array(n).fill(0),arrivalPlan=[];
+    const initialReady=Array(n).fill(0),arrivalPlan=[],fixedArrivals=options.arrivalPlan!==undefined;
     // Arrival waves preserve the established start times, so duration-only
     // trials can use the all-ready schedule without rebuilding queue statistics.
-    if(c.arrivalMode==='auto'&&!options.totalsOnly){
+    if(fixedArrivals){
+      const seen=new Set(),valid=Array.isArray(options.arrivalPlan)&&options.arrivalPlan.every(b=>{
+        if(!b||!Array.isArray(b.people)||!b.people.length||!Number.isFinite(b.report)||!Number.isFinite(b.ready)||b.report>b.ready||b.ready<c.prep)return false;
+        return b.people.every(person=>{if(!Number.isInteger(person)||person<1||person>n||seen.has(person))return false;seen.add(person);return true;});
+      });
+      if(!valid||seen.size!==n)return {config:null,result:null,errors:[{key:'arrivalMode',message:'固定到场安排与当前人员不一致，请重新计算。'}]};
+      for(const b of options.arrivalPlan){
+        const ready=Math.round((b.ready-c.prep)*1000);
+        b.people.forEach(person=>initialReady[person-1]=ready);
+        arrivalPlan.push({...b,people:[...b.people],count:b.people.length});
+      }
+    }else if(c.arrivalMode==='auto'&&!options.totalsOnly){
       const seed=calculate({...raw,arrivalMode:'all'},{totalsOnly:true});
       if(!seed.result)return seed;
       const starts=new Map();
@@ -194,13 +205,21 @@
     });
     const breakSeconds=restSegments.reduce((a,b) => a+b.end-b.start,0)/1000;
     const effectiveBreaks=restSegments.map(b => ({start:c.prep+b.start/1000,end:c.prep+b.end/1000,name:b.name,afterStage:b.afterStage,indices:b.indices}));
-    if(c.arrivalMode==='all'){
+    if(c.arrivalMode==='all'&&!fixedArrivals){
       const starts=new Map();records.filter(e=>e.visit===1).forEach(e=>{const key=e.station+'-'+e.group;if(!starts.has(key))starts.set(key,[]);starts.get(key).push(e);});
       for(const rows of starts.values())arrivalPlan.push({station:rows[0].station,group:rows[0].group,people:rows.map(e=>e.person),count:rows.length,report:0,ready:c.prep,firstBegin:c.prep+Math.min(...rows.map(e=>e.begin)),lastBegin:c.prep+Math.max(...rows.map(e=>e.begin))});
     }
-    arrivalPlan.forEach((b,i)=>b.batch=i+1);
+    const firstVisits=new Map(records.filter(e=>e.visit===1).map(e=>[e.person,e]));
+    for(const b of arrivalPlan){
+      const rows=b.people.map(person=>firstVisits.get(person));
+      if(rows.some(e=>e.station!==b.station||e.group!==b.group))return {config:null,result:null,errors:[{key:'arrivalMode',message:'固定到场安排的起始站点或小组已变化，请重新计算。'}]};
+      b.firstBegin=c.prep+Math.min(...rows.map(e=>e.begin));b.lastBegin=c.prep+Math.max(...rows.map(e=>e.begin));
+    }
+    const reports=[...new Set(arrivalPlan.map(b=>Math.round(b.report*1000)))].sort((a,b)=>a-b),waves=new Map(reports.map((tick,i)=>[tick,i+1]));
+    arrivalPlan.forEach((b,i)=>{b.batch=i+1;b.wave=waves.get(Math.round(b.report*1000));});
+    const earliestArrival=Math.min(...arrivalPlan.map(b=>b.report)),coverageStart=Math.min(0,earliestArrival),coverageEnd=actual,coverageDuration=actual-coverageStart;
     if(c.startMs!==null&&arrivalPlan.some(b=>!Number.isFinite(new Date(c.startMs+b.report*1000).getTime())))return {config:null,result:null,errors:[{key:'arrivalLead',message:'建议到场日期超出可表示范围，请减少提前准备时间'}]};
-    return {errors:[],config:c,result:{test,testStart:c.prep,testEnd:c.prep+testEnd/1000,actual,reserved,breakSeconds,testBreakSeconds:breakSeconds,effectiveBreaks,records,stationStats,arrivalPlan,peakWaiting:peak(waiting.flat()),groups:groups.map(g => ({first:g[0]+1,last:g[g.length-1]+1,count:g.length})),meanWait:records.reduce((a,r) => a+r.wait,0)/n,meanBreakWait:records.reduce((a,r) => a+r.breakWait,0)/n}};
+    return {errors:[],config:c,result:{test,testStart:c.prep,testEnd:c.prep+testEnd/1000,actual,reserved,earliestArrival,coverageStart,coverageEnd,coverageDuration,arrivalWaveCount:reports.length,breakSeconds,testBreakSeconds:breakSeconds,effectiveBreaks,records,stationStats,arrivalPlan,peakWaiting:peak(waiting.flat()),groups:groups.map(g => ({first:g[0]+1,last:g[g.length-1]+1,count:g.length})),meanWait:records.reduce((a,r) => a+r.wait,0)/n,meanBreakWait:records.reduce((a,r) => a+r.breakWait,0)/n}};
   }
   function capacityReference(raw,baseline=calculate(raw)) {
     if (!baseline.result) return {errors:baseline.errors,candidates:[],best:null};

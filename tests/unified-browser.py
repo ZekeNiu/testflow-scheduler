@@ -59,7 +59,7 @@ with sync_playwright() as pw:
         workers=[];page.on('worker',lambda w:workers.append(w));generate(page)
         expect(page.locator('#optimizer-results')).to_contain_text('2 / 2');expect(page.locator('#optimizer-results')).to_contain_text('未设置可接受上限')
         assert saved(page)==initial and workers
-        expect(page.locator('.optimizer-comparison').first.locator('tbody tr')).to_have_count(9)
+        expect(page.locator('.optimizer-comparison').first.locator('tbody tr')).to_have_count(10)
         check('Default fixed-capacity worker comparison, complete metrics and no plan mutation')
         option(page,'allowRotation',True);option(page,'allowArrival',True);generate(page)
         expect(page.locator('#optimizer-results')).to_contain_text('14 / 14');expect(page.locator('#optimizer-results')).to_contain_text('需要权衡')
@@ -87,7 +87,7 @@ with sync_playwright() as pw:
         target(page,0,2);target(page,1,2);manual(page);assert saved(page)==joint
         expect(page.locator('.optimizer-comparison').first.locator('tbody tr').first).to_contain_text('20 分')
         num(page,'totalLimit',19);manual(page)
-        expect(page.locator('#optimizer-results')).to_contain_text('超出 现场总时长 上限');expect(page.locator('#optimizer-preview')).to_have_count(0)
+        expect(page.locator('#optimizer-results')).to_contain_text('超出 开场至收尾时长 上限');expect(page.locator('#optimizer-preview')).to_have_count(0)
         generate(page);expect(page.locator('#optimizer-result-title')).to_contain_text('没有方案满足');expect(page.locator('#optimizer-preview')).to_have_count(0)
         num(page,'totalLimit',20);manual(page);expect(page.locator('#optimizer-preview')).to_be_visible()
         check('Manual vectors and automatic search share resource bounds, upper-limit checks and application restrictions')
